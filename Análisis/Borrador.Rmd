@@ -1,0 +1,170 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-06-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Paquetes
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(survey)
+library(srvyr)
+library(sampling)
+
+
+U <- read_csv("Montevideo GR1.csv")
+U=Montevideo_GR1
+
+
+```
+
+
+
+
+Analisis previo
+
+```{r}
+
+str(U)
+summary(U)
+
+# computamos totales de las variables y N
+pop_total = U %>% summarise(Total_personas=sum(cant_personas),
+                 Desocupados=sum(desocupados),
+                 Ocupados=sum(ocuopados),
+                 Pobres=sum(pobre),
+                 N=n())
+pop_total
+
+
+
+```
+
+
+
+
+1. Calcule el tamano de muestra para obtener un margen de error de ±3% a un 95%
+de confianza para estimar cualquier proporcion poblacional. Asuma un efecto de
+diseno de 1.5.
+
+para el tamaño de la muestra ($n = \frac{Z^2 \cdot p \cdot (1-p)}{E^2}deff$)
+
+```{r}
+
+n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
+
+```
+
+
+
+2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por
+estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.
+
+
+
+```{r}
+
+
+
+tam = U %>% group_by(estrato) %>% summarise(N=n(),
+                                               tot_ing=sum(ingreso_hog),
+                                               prom_ing=mean(ingreso_hog),
+                                               sd_ig=sd(ingreso_hog),)
+
+tam = tam %>% mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig)))
+
+```
+
+
+
+
+
+3.
+
+```{r}
+
+set.seed(1)
+
+U= U %>% arrange(estrato)
+sample = sampling::strata(U,
+                          stratanames = c('estrato'),
+                          size = tam$n_opt,
+                          method='srswor',
+                          description = TRUE)
+
+
+sample = sampling::getdata(U,sample)
+
+
+sample=as_tibble(sample)
+
+
+U  %>% group_by(.,estrato,manzana)  %>%  count()
+
+####################################
+
+
+#Cantidad de hogares por estrato
+U %>% count(estrato)
+
+#Cantidad de hogares por UPM (Manzana)
+(U   %>%  count(manzana) )
+
+#Cantidad de personas por UPM (manzana)
+
+U_upm =U   %>%  group_by(manzana)   %>% summarise(MOS=sum(n()))
+
+
+#Primera etapa
+
+#Vamos a seleccionar 5 viviendas de cada UPM seleccionada proporcional a la cantidad de personas
+
+#Para el estrato 1
+
+Estrato1 =  U   %>%  filter(,estrato==1)
+
+#Cantidad de personas por UPM (manzana)
+
+U_upm_estrato1 =Estrato1   %>%  group_by(manzana)   %>% summarise(MOS=sum(n()))
+
+m=136/5 #La cantidad manzanas que vamos a sacar del estrato 1
+
+#help(strata)
+
+U_upm_estrato1= U_upm_estrato1 %>% arrange(manzana)
+
+set.seed(1)
+
+s_upm_1=sampling::strata(data=U_upm_estrato1,
+                    stratanames = NULL,
+                    size=m,
+                    method='systematic',
+                    pik=U_upm_estrato1$MOS)
+
+s_upm_1 = getdata(U_upm_estrato1,s_upm_1) %>% 
+  rename(prob_upm=Prob)
+
+
+#Segunda etapa
+
+U_usm_1 = U %>% left_join(s_upm_1 %>% select(manzana,prob_upm)) %>% filter(is.na(prob_upm)==FALSE)
+
+set.seed(1)
+
+U_usm_1= U_usm_1 %>% arrange(manzana)
+
+s_1= sampling::strata(data=U_usm_1,
+                    stratanames = 'manzana',
+                    size=rep(5,m),
+                    method='srswor')
+s_1 = getdata(U_usm_1,s_1) %>% 
+  rename(prob_usm=Prob)
+
+Stratum
+
+```
+
