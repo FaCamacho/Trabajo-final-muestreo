@@ -17,6 +17,7 @@ library(sampling)
 
 
 U <- read_csv("Montevideo GR1.csv")
+
 U=Montevideo_GR1
 
 
@@ -51,11 +52,13 @@ pop_total
 de confianza para estimar cualquier proporcion poblacional. Asuma un efecto de
 diseno de 1.5.
 
-para el tamaño de la muestra ($n = \frac{Z^2 \cdot p \cdot (1-p)}{E^2}deff$)
+para el tamaño de la muestra: ($n = \frac{Z^2 \cdot p \cdot (1-p)}{E^2}deff$)
 
 ```{r}
 
 n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
+
+n
 
 ```
 
@@ -75,7 +78,9 @@ tam = U %>% group_by(estrato) %>% summarise(N=n(),
                                                prom_ing=mean(ingreso_hog),
                                                sd_ig=sd(ingreso_hog),)
 
-tam = tam %>% mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig)))
+tam = tam %>% mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig),0))
+
+tamano= as.vector(tam %>% select(.,n_opt))
 
 ```
 
@@ -87,25 +92,8 @@ tam = tam %>% mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig)))
 
 ```{r}
 
-set.seed(1)
 
-U= U %>% arrange(estrato)
-sample = sampling::strata(U,
-                          stratanames = c('estrato'),
-                          size = tam$n_opt,
-                          method='srswor',
-                          description = TRUE)
-
-
-sample = sampling::getdata(U,sample)
-
-
-sample=as_tibble(sample)
-
-
-U  %>% group_by(.,estrato,manzana)  %>%  count()
-
-####################################
+S=c()
 
 
 #Cantidad de hogares por estrato
@@ -121,7 +109,10 @@ U_upm =U   %>%  group_by(manzana)   %>% summarise(MOS=sum(n()))
 
 #Primera etapa
 
-#Vamos a seleccionar 5 viviendas de cada UPM seleccionada proporcional a la cantidad de personas
+#Vamos a seleccionar 5 viviendas de cada UPM, cada UPM será seleccionada proporcional
+#a la cantidad de personas
+
+
 
 #Para el estrato 1
 
@@ -129,14 +120,18 @@ Estrato1 =  U   %>%  filter(,estrato==1)
 
 #Cantidad de personas por UPM (manzana)
 
-U_upm_estrato1 =Estrato1   %>%  group_by(manzana)   %>% summarise(MOS=sum(n()))
+U_upm_estrato1 =U   %>%  filter(,estrato==1)   %>%  group_by(manzana)   %>% summarise(MOS=sum(n()))
 
-m=136/5 #La cantidad manzanas que vamos a sacar del estrato 1
+m=tamano[["n_opt"]][1]/5 #La cantidad manzanas que vamos a sacar del estrato 1
 
-#help(strata)
 
-U_upm_estrato1= U_upm_estrato1 %>% arrange(manzana)
 
+#Acá ordené por MOS, en lugar de manzana
+U_upm_estrato1 = U %>% filter(,estrato==1) %>%  group_by(manzana) %>% summarise(MOS=sum(n())) %>% arrange(MOS)
+
+
+
+#Aquí estamos seleccionando la cantidad de manzanas del estrato
 set.seed(1)
 
 s_upm_1=sampling::strata(data=U_upm_estrato1,
@@ -145,26 +140,250 @@ s_upm_1=sampling::strata(data=U_upm_estrato1,
                     method='systematic',
                     pik=U_upm_estrato1$MOS)
 
-s_upm_1 = getdata(U_upm_estrato1,s_upm_1) %>% 
-  rename(prob_upm=Prob)
+s_upm_1 = getdata(U_upm_estrato1,s_upm_1) %>% rename(prob_upm=Prob)
 
 
 #Segunda etapa
+#Vamos a seleccionar mediante un diseño simple la cantidad de hogares dentro de las manzanas seleccionadas
 
 U_usm_1 = U %>% left_join(s_upm_1 %>% select(manzana,prob_upm)) %>% filter(is.na(prob_upm)==FALSE)
 
-set.seed(1)
-
 U_usm_1= U_usm_1 %>% arrange(manzana)
+
+set.seed(1)
 
 s_1= sampling::strata(data=U_usm_1,
                     stratanames = 'manzana',
                     size=rep(5,m),
                     method='srswor')
-s_1 = getdata(U_usm_1,s_1) %>% 
-  rename(prob_usm=Prob)
 
-Stratum
+s_1 = getdata(U_usm_1,s_1) %>% rename(prob_usm=Prob)
 
 ```
+
+
+
+
+```{r}
+
+#Intento de hacerlo con un for
+
+Muestra = list("Estrato 1"=0,"Estrato 2"=0,"Estrato 3"=0,"Estrato 4"=0,"Estrato 5"=0)
+
+
+
+for(i in 1:5) {
+  
+  
+  #Primera etapa
+
+#Vamos a seleccionar 5 viviendas de cada UPM, cada UPM será seleccionada proporcional
+#a la cantidad de personas
+
+
+
+#Para el estrato 1
+
+m=round(tamano[["n_opt"]][i]/5,0) #La cantidad manzanas que vamos a sacar del estrato 
+
+#Cantidad de personas por UPM (manzana)
+
+#Acá ordené por MOS, en lugar de manzana
+U_upm_estrato = U %>% filter(,estrato==i) %>%  group_by(manzana) %>% summarise(MOS=sum(n())) %>% arrange(MOS)
+
+
+
+#Aquí estamos seleccionando la cantidad de manzanas del estrato
+set.seed(1)
+
+s_upm=sampling::strata(data=U_upm_estrato,
+                    stratanames = NULL,
+                    size=m,
+                    method='systematic',
+                    pik=U_upm_estrato$MOS)
+
+s_upm = getdata(U_upm_estrato,s_upm) %>% rename(prob_upm=Prob)
+
+
+#Segunda etapa
+#Vamos a seleccionar mediante un diseño simple la cantidad de hogares dentro de las manzanas seleccionadas
+
+U_usm= U %>% left_join(s_upm %>% select(manzana,prob_upm)) %>% filter(is.na(prob_upm)==FALSE)
+
+
+
+U_usm= U_usm %>% arrange(manzana)
+
+set.seed(1)
+
+s= sampling::strata(data=U_usm,
+                    stratanames = 'manzana',
+                    size=rep(5,m),
+                    method='srswor')
+
+s = getdata(U_usm,s) %>% rename(prob_usm=Prob)
+  
+
+Muestra[[i]]=s
+  
+}
+
+S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],Muestra[[5]]))
+
+
+
+```
+
+4.
+
+Calcule la estimacion puntual del $ingreso promedio$, $proporcion de hogares$ y $total de personas$,
+a nivel de toda la poblaci´on. Para cada estimacion se debe computar:
+error estandar (SE), coeficiente de variacion, efecto de diseno y los margenes de
+error al 95%. Interprete los resultados.
+
+
+```{r}
+
+#Realizado sobre el total de S
+
+S = S %>% mutate(prob_total=prob_upm*prob_usm,
+                w=1/prob_total)
+
+
+ps_pps= S %>% svydesign(ids=~manzana+ID,
+                     weights=~w,
+                     data=.)
+
+#Totales
+
+totales = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps,deff=T))
+
+N_gorro = sum(S$w)
+
+#Estimadores
+
+ingreso_gorro = totales[1,1]
+
+cant_personas_gorro = totales[2,1]
+
+desocupados_gorro = totales[3,1]
+
+
+ingreso_promedio_gorro = ingreso_gorro/N_gorro
+
+prop_desocupados_gorro = desocupados_gorro/N_gorro
+
+
+estimadores = matrix(c(ingreso_promedio_gorro,cant_personas_gorro,prop_desocupados_gorro))
+
+
+#estimadores= as.data.frame(matrix(ncol = 1,nrow = 3))
+
+
+#Coeficientes de variacion
+
+CV_ingreso_promedio_gorro = ingreso_promedio_gorro/totales[1,2]*100
+
+CV_cant_personas_gorro = (cant_personas_gorro/N_gorro)/totales[2,2]*100
+
+
+#Intervalo de confianza
+
+confint(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps))
+
+
+
+
+#Parametros
+
+parametros = U %>% summarise(Ingreso_promedio=mean(ingreso_hog),
+                 Cantidad_personas=sum(cant_personas),
+                 Prop_hogares_desocupados=mean(desocupados))
+parametros
+
+
+
+
+
+++
+
+########################
+#Realizado por estratos#
+########################
+
+
+#Estrato1
+
+
+S_1 = Muestra[[1]]  %>%  mutate(prob_total=prob_upm*prob_usm,
+                w=1/prob_total)
+
+
+ps_pps_1= S_1 %>% svydesign(ids=~manzana+ID,
+                     weights=~w,
+                     data=.)
+
+Paramatro_estrato1 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_1))
+
+#Estrato2
+
+
+S_2 = Muestra[[2]]  %>%  mutate(prob_total=prob_upm*prob_usm,
+                w=1/prob_total)
+
+
+ps_pps_2= S_2 %>% svydesign(ids=~manzana+ID,
+                     weights=~w,
+                     data=.)
+
+Paramatro_estrato2 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_2))
+
+#Estrato3
+
+
+S_3 = Muestra[[3]]  %>%  mutate(prob_total=prob_upm*prob_usm,
+                w=1/prob_total)
+
+
+ps_pps_3= S_3 %>% svydesign(ids=~manzana+ID,
+                     weights=~w,
+                     data=.)
+
+Paramatro_estrato3 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_3))
+
+#Estrato4
+
+
+S_4 = Muestra[[4]]  %>%  mutate(prob_total=prob_upm*prob_usm,
+                w=1/prob_total)
+
+
+ps_pps_4= S_4 %>% svydesign(ids=~manzana+ID,
+                     weights=~w,
+                     data=.)
+
+Paramatro_estrato4 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_4))
+
+
+#Estrato5
+
+
+S_5 = Muestra[[5]]  %>%  mutate(prob_total=prob_upm*prob_usm,
+                w=1/prob_total)
+
+
+ps_pps_5= S_5 %>% svydesign(ids=~manzana+ID,
+                     weights=~w,
+                     data=.)
+
+Paramatro_estrato5 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_5))
+
+totales = as.numeric(Paramatro_estrato1$total+Paramatro_estrato2$total+Paramatro_estrato3$total+Paramatro_estrato4$total+Paramatro_estrato5$total)
+
+totales
+
+```
+
+
+
 
