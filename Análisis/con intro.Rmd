@@ -29,6 +29,8 @@ U <- read_csv("Montevideo GR1.csv")
 
 U=Montevideo_GR1
 
+options(scipen = 9999)
+
 
 ```
 
@@ -69,6 +71,8 @@ para el tamaño de la muestra: ($n = \frac{Z^2 \cdot p \cdot (1-p)}{E^2}deff$)
 n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 
 n
+
+N_II = length(U)
 
 ```
 
@@ -246,7 +250,7 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
 
 4.
 
-Calcule la estimacion puntual del $ingreso promedio$, $proporcion de hogares$ y $total de personas$,
+Calcule la estimacion puntual del $ingreso promedio$, $proporcion de hogares pobres$ y $total de personas$,
 a nivel de toda la poblaci´on. Para cada estimacion se debe computar:
 error estandar (SE), coeficiente de variacion, efecto de diseno y los margenes de
 error al 95%. Interprete los resultados.
@@ -260,11 +264,9 @@ S = S %>% mutate(prob_total=prob_upm*prob_usm,
                 w=1/prob_total)
 
 
-ps_pps= S %>% svydesign(ids=~manzana+ID,
-                     weights=~w,
-                     data=.)
 
-#Otra opcion pero correcta?
+
+
 ps_pps= S %>% svydesign(ids=~manzana+ID,
                         strata = ~estrato, 
                      weights=~w,
@@ -272,7 +274,7 @@ ps_pps= S %>% svydesign(ids=~manzana+ID,
 
 #Totales
 
-totales = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps,deff=T))
+totales = as.data.frame(svytotal(~ingreso_hog+cant_personas+pobre,ps_pps,deff=T))
 
 N_gorro = sum(S$w)
 
@@ -285,12 +287,12 @@ cant_personas_gorro = totales[2,1]
 desocupados_gorro = totales[3,1]
 
 
-ingreso_promedio_gorro = ingreso_gorro/N_gorro
+ingreso_promedio_gorro = ingreso_gorro/N_II #N es la cantidad de hogares (USM)
 
-prop_desocupados_gorro = desocupados_gorro/N_gorro
+prop_desocupados_gorro = desocupados_gorro/N_II
 
 
-estimadores = matrix(c(ingreso_promedio_gorro,cant_personas_gorro,prop_desocupados_gorro))
+estimadores = as.data.frame(matrix(c(ingreso_promedio_gorro,cant_personas_gorro,prop_desocupados_gorro)))
 
 
 #estimadores= as.data.frame(matrix(ncol = 1,nrow = 3))
@@ -302,12 +304,19 @@ CV_ingreso_promedio_gorro = ingreso_promedio_gorro/totales[1,2]*100
 
 CV_cant_personas_gorro = (cant_personas_gorro/N_gorro)/totales[2,2]*100
 
+CV_prop_pobres_gorro = (prop_desocupados_gorro/N_gorro)/totales[3,2]*100
+
 
 #Intervalo de confianza
 
-confint(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps))
+confint(svytotal(~ingreso_promedio_gorro+cant_personas_gorro+prop_desocupados_gorro,ps_pps))
 
 
+svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps)  %>% confint()
+
+
+#Resolver
+#ps_pps  %>% summarise(survey_total(ingreso_promedio_gorro, vartype = c('cv','ci'), deff=TRUE))
 
 
 #Parametros
@@ -318,11 +327,10 @@ parametros = U %>% summarise(Ingreso_promedio=mean(ingreso_hog),
 parametros
 
 
+```
 
 
-
-++
-
+```{r}
 ########################
 #Realizado por estratos#
 ########################
@@ -396,10 +404,30 @@ Paramatro_estrato5 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupad
 
 totales = as.numeric(Paramatro_estrato1$total+Paramatro_estrato2$total+Paramatro_estrato3$total+Paramatro_estrato4$total+Paramatro_estrato5$total)
 
-totales
-
+totales 
 ```
 
+ 6 Calcule el ingreso per c´apita en Montevideo (junto con su error est´andar). Indique
+el tipo de par´ametro y qu´e m´etodo fue utilizado por defecto por el paquete survey
+para la estimaci´on del error est´andar. Tenga en cuenta que el ingreso per c´apita se
+calcula como
 
 
+
+```{r}
+
+# Calcular la estimación de razón
+ratio_est <- svyratio(numerator = ~ingreso_hog,
+                      denominator = ~cant_personas,
+                      design = ps_pps)
+
+
+ratio_est
+
+
+
+
+
+
+```
 
