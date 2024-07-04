@@ -336,7 +336,10 @@ parametros
 
 
 ```
+5. Para computar los errores estándar del punto anterior, ¿qué método para estimar
+varianza se utilizó?
 
+Para estimar la varianza R utiliza el método de la linealización de Taylor. Este realiza una aproximación lineal del estimador y permite estimar la varianza utilizando metodos para estimadores lineales.
 
 ```{r}
 ########################
