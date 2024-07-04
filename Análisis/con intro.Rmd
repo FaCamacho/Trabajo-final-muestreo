@@ -63,7 +63,13 @@ pop_total
 de confianza para estimar cualquier proporcion poblacional. Asuma un efecto de
 diseno de 1.5.
 
-para el tamaño de la muestra: ($n = \frac{Z^2 \cdot p \cdot (1-p)}{E^2}deff$)
+Para obtener el tamaño de muestra para cualquier proporción se utilizó la formula:
+
+  n = (((z^2 * p * (1-p)) / moe^2) * moe )
+
+Como se pedía un 95% de confianza, alfa tomó el valor de 0,05. Llevando a que z(1-alfa) fuera el valor de la distribución normal en el cuantil 0,975.
+Posteriormente se asumió que p tomaba el valor de 0,5 y se sustituyó moe (margen de error) por 0,03, tal como pide la letra.
+
 
 
 ```{r}
@@ -72,7 +78,7 @@ n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 
 n
 
-N_II = length(U)
+N_II = length(U) #cantidad de hogares
 
 ```
 
@@ -81,6 +87,8 @@ N_II = length(U)
 2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por
 estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.
 
+Se comenzó calculando para cada estrato su tamaño y las medidas de resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
+Posteriormente, algunos de estos resultados fueron utilizados junto con el tamaño de muestra calculado en el punto anterior para obtener el tamaño de muestra de cada estrato según la asignación optima. 
 
 
 ```{r}
@@ -102,7 +110,7 @@ tamano= as.vector(tam %>% select(.,n_opt))
 
 
 
-3.
+3. Seleccione una muestra bajo el diseño propuesto (aleatorio, estratificado, por conglomerados y en 2 etapas de selección). Utilice como semilla el número de grupo al que pertenece.
 
 ```{r}
 
