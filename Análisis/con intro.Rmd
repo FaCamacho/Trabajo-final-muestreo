@@ -339,7 +339,10 @@ parametros
 5. Para computar los errores estándar del punto anterior, ¿qué método para estimar
 varianza se utilizó?
 
-Para estimar la varianza R utiliza el método de la linealización de Taylor. Este realiza una aproximación lineal del estimador y permite estimar la varianza utilizando metodos para estimadores lineales.
+Para estimar la varianza se utilizó el método del último conglomerado junto con la linealización de Taylor. En este método se asume que la mayor variabilidad en la estimación proviene de la primera etapa del muestreo y que las manzanas (UPM) son seleccionadas con reposición. Luego el método de la linealización de Taylor realiza una aproximación lineal del estimador y permite estimar la varianza utilizando métodos para estimadores lineales.
+
+Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: -
+
 
 ```{r}
 ########################
