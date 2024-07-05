@@ -23,9 +23,9 @@ library(tidyverse)
 library(survey)
 library(srvyr)
 library(sampling)
+library(here)
 
-
-U <- read_csv("Montevideo GR1.csv")
+U <- read_csv(here("Datos/Montevideo GR1.csv"))
 
 U=Montevideo_GR1
 
