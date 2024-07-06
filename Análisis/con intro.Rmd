@@ -228,7 +228,8 @@ total_personas_gorro = cross_join( as.data.frame(svytotal(~cant_personas,ps_pps,
 
 #Totales
 
-estimadores =round(rbind(ingreso_promedio_gorro,hogares_pobres_gorro,total_personas_gorro),3)
+estimadores =round(rbind(ingreso_promedio_gorro,hogares_pobres_gorro,total_personas_gorro),3)%>%
+  select(.,1,2,6,4,5,3)
 
 rownames(estimadores) <- c("Ingreso promedio","Proporcion hogares pobres","Total de personas")
 
@@ -262,10 +263,11 @@ sqrt(ratio_est$var)
 
 
 ```
-*7. Calcule la estimaci´on del error est´andar del punto anterior, utilizando dos m´etodos de remuestreo: Jackknife y Bootstrap (con 1000 r´eplicas).*
+*7. Calcule la estimación del error estándar del punto anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap (con 1000 réplicas).*
 *Compare los resultados obtenidos.*
 
-
+*8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap*.
+*Interprete los resultados obtenidos.*
 
 
 #Borradores
