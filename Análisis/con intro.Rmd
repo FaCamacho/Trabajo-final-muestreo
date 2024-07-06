@@ -236,16 +236,15 @@ rownames(estimadores) <- c("Ingreso promedio","Proporcion hogares pobres","Total
 ```
  
 
-5. Para computar los errores estándar del punto anterior, ¿qué método para estimar
-varianza se utilizó?
+*5. Para computar los errores estándar del punto anterior, ¿qué método para estimar varianza se utilizó?*
 
 Para estimar la varianza se utilizó el método del último conglomerado junto con la linealización de Taylor. En este método se asume que la mayor variabilidad en la estimación proviene de la primera etapa del muestreo y que las manzanas (UPM) son seleccionadas con reposición. Luego el método de la linealización de Taylor realiza una aproximación lineal del estimador y permite estimar la varianza utilizando métodos para estimadores lineales.
 
 Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: -
 
 
- 6 Calcule el ingreso per cápita en Montevideo (junto con su error estándar).
- Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.
+ *6. Calcule el ingreso per cápita en Montevideo (junto con su error estándar).*
+*Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.*
 
 
 
@@ -257,11 +256,9 @@ ratio_est <- svyratio(numerator = ~ingreso_hog,
                       design = ps_pps)
 
 
-ratio_est
+ratio_est$ratio
 
-
-
-
+sqrt(ratio_est$var)
 
 
 ```
