@@ -252,6 +252,9 @@ Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la f
 ```{r}
 
 # Calcular la estimación de razón
+
+
+
 ratio_est <- svyratio(numerator = ~ingreso_hog,
                       denominator = ~cant_personas,
                       design = ps_pps)
@@ -269,11 +272,41 @@ sqrt(ratio_est$var)
 
 ```{r}
 
+#jacknife
+
+jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
+
+ratios_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn)
+
+
+te_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn,return.replicates=TRUE)
+
+te_jkn
+
+```
+
+```{r}
+#Bootstrap
+
+boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
+
+te_boot=svyratio(~ingreso_hog, ~cant_personas,boot,return.replicates=TRUE)
+
+
+
 ```
 
 
 *8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap*.
 *Interprete los resultados obtenidos.*
+
+```{r}
+tibble(est= te_boot$replicates) %>% ggplot()+
+                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white')+
+                                    theme_bw()
+
+
+```
 
 
 #Borradores
