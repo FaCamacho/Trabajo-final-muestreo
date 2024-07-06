@@ -24,11 +24,9 @@ library(survey)
 library(srvyr)
 library(sampling)
 library(here)
-
-U <- read_csv(here("Datos/Montevideo GR1.csv"))
-
 options(scipen = 9999)
 
+U <- read_csv(here("Datos/Montevideo GR1.csv"))
 
 ```
 
@@ -53,8 +51,6 @@ pop_total = U %>% summarise(Total_personas=sum(cant_personas),
                  Pobres=sum(pobre),
                  N=n())
 pop_total
-
-
 
 ```
 
@@ -85,8 +81,7 @@ N_II = nrow(U) #cantidad de hogares
 
 
 
-2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por
-estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.
+*2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.*
 
 Se comenzó calculando para cada estrato su tamaño y las medidas de resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con el tamaño de muestra calculado en el punto anterior para obtener el tamaño de muestra de cada estrato según la asignación optima. 
@@ -110,20 +105,12 @@ tamano= as.vector(tam %>% select(.,n_opt))
 
 ```
 
-```{r}
+
+*3. Seleccione una muestra bajo el diseño propuesto (aleatorio, estratificado, por conglomerados y en 2 etapas de selección).*
+*Utilice como semilla el número de grupo al que pertenece.*
 
 
-
-```
-
-
-
-
-
-3. Seleccione una muestra bajo el diseño propuesto (aleatorio, estratificado, por conglomerados y en 2 etapas de selección). Utilice como semilla el número de grupo al que pertenece.
-
-
-```{r}
+```{r, echo=T}
 
 
 Muestra = list("Estrato 1"=0,"Estrato 2"=0,"Estrato 3"=0,"Estrato 4"=0,"Estrato 5"=0)
@@ -194,24 +181,19 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
 
 ```
 
-4.
+*4. Calcule la estimacion puntual del ingreso promedio, proporcion de hogares pobres y total de personas ,a nivel de toda la población*
 
-Calcule la estimacion puntual del *ingreso promedio*, *proporcion de hogares pobres* y *total de personas*,a nivel de toda la población.
-
-Para cada estimacion se debe computar:
- - Error estandar (SE)
- - Coeficiente de variacion
- - Efecto de diseno
- - Margenes de error al 95%.
+*Para cada estimacion se debe computar:*
+ *- Error estandar (SE)*
+ *- Coeficiente de variacion*
+ *- Efecto de diseno*
+ *- Margenes de error al 95%.*
  
- Interprete los resultados.
+ *Interprete los resultados.*
  
  
  
-```{r}
-
-
-
+```{r,echo=T}
 
 #Diseño estratificado en dos etapas 
 ps_pps = S %>% svydesign(ids=~manzana+ID,
@@ -220,109 +202,39 @@ ps_pps = S %>% svydesign(ids=~manzana+ID,
                      data=.)
 
 
-#Totales
-
-totales = as.data.frame(svytotal(~ingreso_hog+cant_personas+pobre,ps_pps,deff=T)) 
-
-N_gorro = sum(S$w)
-
-#Estimadores
-
-estimadores = totales %>%
-  select(.,1)
-
-colnames(estimadores) <- c("Estimadores")
-
-
 #Ingreso promedio
 
-ingreso_promedo_gorro = as.data.frame(svymean(~ingreso_hog,ps_pps,deff=T))
-
-ingreso_promedo_gorro$mean
-
-confint(svymean(~ingreso_hog,ps_pps,deff=T))
-
+ingreso_promedio_gorro = cross_join( as.data.frame(svymean(~ingreso_hog,ps_pps,deff=T)),
+                                     as.data.frame(confint(svymean(~ingreso_hog,ps_pps,deff=T))))%>%
+                          rename(.,Estimacion_puntual=mean,SE=ingreso_hog)%>%
+                              mutate(.,CV=SE/Estimacion_puntual)
 
 
+#Proporcion de hogares pobres
+
+
+hogares_pobres_gorro = cross_join( as.data.frame(svymean(~pobre,ps_pps,deff=T)),
+                                     as.data.frame(confint(svymean(~pobre,ps_pps,deff=T))))%>%
+                            rename(.,Estimacion_puntual=mean,SE=pobre)%>%
+                              mutate(.,CV=SE/Estimacion_puntual)
+
+
+#Total de personas
+
+total_personas_gorro = cross_join( as.data.frame(svytotal(~cant_personas,ps_pps,deff=T)),
+                                     as.data.frame(confint(svytotal(~cant_personas,ps_pps,deff=T))))%>%
+                          rename(.,Estimacion_puntual=total,SE=cant_personas)%>%
+                              mutate(.,CV=SE/(as.data.frame(svymean(~cant_personas,ps_pps,deff=T))$mean) )
+
+#Totales
+
+estimadores =round(rbind(ingreso_promedio_gorro,hogares_pobres_gorro,total_personas_gorro),3)
+
+rownames(estimadores) <- c("Ingreso promedio","Proporcion hogares pobres","Total de personas")
 
 
 ```
  
-
-
-```{r}
-
-#Realizado sobre el total de S
-
- #Diseño estratificado en dos etapas 
-ps_pps = S %>% svydesign(ids=~manzana+ID,
-                        strata = ~estrato, 
-                     weights=~w,
-                     data=.)
-
-#Totales
-
-totales = as.data.frame(svytotal(~ingreso_hog+cant_personas+pobre,ps_pps,deff=T)) 
-
-N_gorro = sum(S$w)
-
-#Estimadores
-
-estimadores = totales %>%
-  select(.,1)
-
-colnames(estimadores) <- c("Estimadores")
-
-ingreso_gorro = totales[1,1]
-
-cant_personas_gorro = totales[2,1]
-
-pobre_gorro = totales[3,1]
-
-
-ingreso_promedio_gorro = ingreso_gorro/N_II #N es la cantidad de hogares (USM)
-
-prop_pobre_gorro = pobre_gorro/N_II
-
-
-estimadores = as.data.frame(matrix(c(ingreso_promedio_gorro,cant_personas_gorro,prop_desocupados_gorro)))
-
-
-#estimadores= as.data.frame(matrix(ncol = 1,nrow = 3))
-
-
-#Coeficientes de variacion
-
-CV_ingreso_promedio_gorro = ingreso_promedio_gorro/totales[1,2]*100
-
-CV_cant_personas_gorro = (cant_personas_gorro/N_gorro)/totales[2,2]*100
-
-CV_prop_pobres_gorro = (prop_desocupados_gorro/N_gorro)/totales[3,2]*100
-
-
-#Intervalo de confianza
-
-confint(svytotal(~ingreso_promedio_gorro+cant_personas_gorro+prop_desocupados_gorro,ps_pps))
-
-
-svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps)  %>% confint()
-
-
-#Resolver
-#ps_pps  %>% summarise(survey_total(ingreso_promedio_gorro, vartype = c('cv','ci'), deff=TRUE))
-
-
-#Parametros
-
-parametros = U %>% summarise(Ingreso_promedio=mean(ingreso_hog),
-                 Cantidad_personas=sum(cant_personas),
-                 Prop_hogares_desocupados=mean(desocupados))
-parametros
-
-
-```
-
-
 
 5. Para computar los errores estándar del punto anterior, ¿qué método para estimar
 varianza se utilizó?
@@ -330,6 +242,36 @@ varianza se utilizó?
 Para estimar la varianza se utilizó el método del último conglomerado junto con la linealización de Taylor. En este método se asume que la mayor variabilidad en la estimación proviene de la primera etapa del muestreo y que las manzanas (UPM) son seleccionadas con reposición. Luego el método de la linealización de Taylor realiza una aproximación lineal del estimador y permite estimar la varianza utilizando métodos para estimadores lineales.
 
 Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: -
+
+
+ 6 Calcule el ingreso per cápita en Montevideo (junto con su error estándar).
+ Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.
+
+
+
+```{r}
+
+# Calcular la estimación de razón
+ratio_est <- svyratio(numerator = ~ingreso_hog,
+                      denominator = ~cant_personas,
+                      design = ps_pps)
+
+
+ratio_est
+
+
+
+
+
+
+```
+
+
+
+
+
+#Borradores
+
 
 
 ```{r}
@@ -407,29 +349,5 @@ Paramatro_estrato5 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupad
 totales = as.numeric(Paramatro_estrato1$total+Paramatro_estrato2$total+Paramatro_estrato3$total+Paramatro_estrato4$total+Paramatro_estrato5$total)
 
 totales 
-```
-
- 6 Calcule el ingreso per c´apita en Montevideo (junto con su error est´andar). Indique
-el tipo de par´ametro y qu´e m´etodo fue utilizado por defecto por el paquete survey
-para la estimaci´on del error est´andar. Tenga en cuenta que el ingreso per c´apita se
-calcula como
-
-
-
-```{r}
-
-# Calcular la estimación de razón
-ratio_est <- svyratio(numerator = ~ingreso_hog,
-                      denominator = ~cant_personas,
-                      design = ps_pps)
-
-
-ratio_est
-
-
-
-
-
-
 ```
 
