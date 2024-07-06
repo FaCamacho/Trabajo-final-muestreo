@@ -262,7 +262,8 @@ sqrt(ratio_est$var)
 
 
 ```
-
+*7. Calcule la estimaci´on del error est´andar del punto anterior, utilizando dos m´etodos de remuestreo: Jackknife y Bootstrap (con 1000 r´eplicas).*
+*Compare los resultados obtenidos.*
 
 
 
