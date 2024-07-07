@@ -233,6 +233,7 @@ estimadores =round(rbind(ingreso_promedio_gorro,hogares_pobres_gorro,total_perso
 
 rownames(estimadores) <- c("Ingreso promedio","Proporcion hogares pobres","Total de personas")
 
+estimadores
 
 ```
  
@@ -254,16 +255,16 @@ Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la f
 # Calcular la estimación de razón
 
 
-
 ratio_est <- svyratio(numerator = ~ingreso_hog,
                       denominator = ~cant_personas,
                       design = ps_pps)
 
+Ingreso_percapita=bind_cols(as.data.frame(ratio_est$ratio),as.data.frame(sqrt(ratio_est$var)))%>%
+  rename(Ingreso_Percapita=cant_personas...1,SE=cant_personas...2)
 
-ratio_est$ratio
+row.names(Ingreso_percapita)=""
 
-sqrt(ratio_est$var)
-
+Ingreso_percapita
 
 ```
 *7. Calcule la estimación del error estándar del punto anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap (con 1000 réplicas).*
@@ -274,7 +275,7 @@ sqrt(ratio_est$var)
 
 #jacknife
 
-jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
+jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=100)
 
 ratios_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn)
 
@@ -287,10 +288,12 @@ te_jkn
 
 ```{r}
 #Bootstrap
-
+#set.seed(1720)
 boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
 
 te_boot=svyratio(~ingreso_hog, ~cant_personas,boot,return.replicates=TRUE)
+
+te_boot 
 
 
 
@@ -303,8 +306,16 @@ te_boot=svyratio(~ingreso_hog, ~cant_personas,boot,return.replicates=TRUE)
 ```{r}
 tibble(est= te_boot$replicates) %>% ggplot()+
                                     geom_histogram(aes(x=est),bins=20,fill='orange',color='white')+
-                                    theme_bw()
+                                    theme_bw()+
+                                    geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", size=1) +
+                                    geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", size=1) +
+                                    labs(title="Histograma con Media y Mediana",
+                                        x="Ratios con de bootstrap",
+                                        y="Frecuencia",
+                                        caption="Media: 1727.804  Mediana: 1728.419") +
+                                    theme(plot.title = element_text(hjust = 0.5))
 
+#median(te_boot$replicates)-mean(te_boot$replicates)
 
 ```
 
