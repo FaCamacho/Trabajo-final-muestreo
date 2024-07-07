@@ -5,9 +5,9 @@ date: "2024-06-18"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
 ```
-#INTRODUCCIÓN
+# INTRODUCCIÓN
 
 El objetivo de este proyecto es realizar estimaciones de diferentes parámetros a partir de varios de los metodos ya vistos en clase.
 Para cumplir el objetivo la obtención de la muestra es una etapa clave, y para esta se comenzó seleccionando una muestra aleatoria de los hogares de Montevideo bajo un
@@ -18,27 +18,32 @@ Finalmente, una vez obtenidas las muestras y las estimaciones se realizaron comp
 
 
 ### Paquetes
-```{r, warning=FALSE, message=FALSE}
+```{r, warning=FALSE, message=FALSE, echo=T}
 library(tidyverse)
 library(survey)
 library(srvyr)
 library(sampling)
 library(here)
+library(kableExtra)
 options(scipen = 9999)
 
-U <- read_csv(here("Datos/Montevideo GR1.csv"))
+```
 
+```{r,warning=FALSE, message=FALSE,}
+U <- read_csv(here("Datos/Montevideo GR1.csv"))
 ```
 
 
 
 
-Analisis previo
 
-```{r,echo=TRUE}
+# Analisis previo
 
-#str(U)
-summary(U)
+```{r}
+
+summary(U) %>%
+  kable() %>%
+  kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
 ```
 
@@ -49,16 +54,18 @@ pop_total = U %>% summarise(Total_personas=sum(cant_personas),
                  Desocupados=sum(desocupados),
                  Ocupados=sum(ocuopados),
                  Pobres=sum(pobre),
-                 N=n())
+                 N=n())%>%
+                 kable()%>%
+                kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 pop_total
 
 ```
 
+# Resultados
 
 
-
-*1. Calcule el tamano de muestra para obtener un margen de error de ±3% a un 95%*
-*de confianza para estimar cualquier proporcion poblacional. Asuma un efecto de diseno de 1.5.*
+**1. Calcule el tamano de muestra para obtener un margen de error de ±3% a un 95%**
+**de confianza para estimar cualquier proporcion poblacional. Asuma un efecto de diseno de 1.5.**
 
 Para obtener el tamaño de muestra para cualquier proporción se utilizó la formula:
 
@@ -66,6 +73,7 @@ Para obtener el tamaño de muestra para cualquier proporción se utilizó la for
 
 Como se pedía un 95% de confianza, $\alpha$ tomó el valor de 0.05. Llevando a que $z_{(1-\alpha)}$  fuera el valor de la distribución normal en el cuantil 0.975.
 Posteriormente se asumió que p tomaba el valor de 0.5 y se sustituyó moe (margen de error) por 0.03, tal como pide la letra.
+Finalmente el tamaño de la muestra quedó en **1601**
 
 
 
@@ -81,7 +89,7 @@ N_II = nrow(U) #cantidad de hogares
 
 
 
-*2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.*
+**2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.**
 
 Se comenzó calculando para cada estrato su tamaño y las medidas de resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con el tamaño de muestra calculado en el punto anterior para obtener el tamaño de muestra de cada estrato según la asignación optima. 
@@ -90,31 +98,56 @@ Posteriormente, algunos de estos resultados fueron utilizados junto con el tama�
 ```{r}
 
 
+U %>% 
+  group_by(estrato) %>% 
+  summarise(N=n(),
+            tot_ing=sum(ingreso_hog),
+            prom_ing=mean(ingreso_hog),
+            sd_ig=sd(ingreso_hog),) %>%
+            mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig),0))%>%
+            rename(.,N_h=N,
+                    Total_ingreso=tot_ing,
+                   Promedio_ingreso=prom_ing,
+                   SE_ingreso=sd_ig,
+                   Tamaño_optimo=n_opt)%>%
+            as.data.frame(.)%>%
+                 kable()%>%
+                kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
+
+
+
+```
+
+
+```{r}
 tam = U %>% 
   group_by(estrato) %>% 
   summarise(N=n(),
             tot_ing=sum(ingreso_hog),
             prom_ing=mean(ingreso_hog),
             sd_ig=sd(ingreso_hog),) %>%
-  mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig),0))
-
-
-tamano= as.vector(tam %>% select(.,n_opt))
+            mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig),0))%>%
+            rename(.,N_h=N,
+                    Total_ingreso=tot_ing,
+                   Promedio_ingreso=prom_ing,
+                   SE_ingreso=sd_ig,
+                   Tamaño_optimo=n_opt)
 
 
 ```
 
 
-*3. Seleccione una muestra bajo el diseño propuesto (aleatorio, estratificado, por conglomerados y en 2 etapas de selección).*
-*Utilice como semilla el número de grupo al que pertenece.*
+**3. Seleccione una muestra bajo el diseño propuesto (aleatorio, estratificado, por conglomerados y en 2 etapas de selección).**
+**Utilice como semilla el número de grupo al que pertenece.**
 
 
-```{r, echo=T}
+```{r, echo=T, message=F}
 
 
 Muestra = list("Estrato 1"=0,"Estrato 2"=0,"Estrato 3"=0,"Estrato 4"=0,"Estrato 5"=0)
 
+tamano= tam %>% as.data.frame(.)%>% select(.,Tamaño_optimo) %>% as.vector(.)
 
 
 for(i in 1:5) {
@@ -129,7 +162,7 @@ for(i in 1:5) {
 
 #Para el estrato 1
 
-m=round(tamano[["n_opt"]][i]/5,0) #La cantidad manzanas que vamos a sacar del estrato 
+m=round(tamano[["Tamaño_optimo"]][i]/5,0) #La cantidad manzanas que vamos a sacar del estrato 
 
 #Cantidad de personas por UPM (manzana)
 
@@ -181,19 +214,19 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
 
 ```
 
-*4. Calcule la estimacion puntual del ingreso promedio, proporcion de hogares pobres y total de personas ,a nivel de toda la población*
+**4. Calcule la estimacion puntual del ingreso promedio, proporcion de hogares pobres y total de personas ,a nivel de toda la población**
 
-*Para cada estimacion se debe computar:*
- *- Error estandar (SE)*
- *- Coeficiente de variacion*
- *- Efecto de diseno*
- *- Margenes de error al 95%.*
+**Para cada estimacion se debe computar:**
+ **- Error estandar (SE)**
+ **- Coeficiente de variacion**
+ **- Efecto de diseno**
+ **- Margenes de error al 95%.**
  
- *Interprete los resultados.*
+**Interprete los resultados.**
  
  
  
-```{r,echo=T}
+```{r,echo=F}
 
 #Diseño estratificado en dos etapas 
 ps_pps = S %>% svydesign(ids=~manzana+ID,
@@ -206,7 +239,7 @@ ps_pps = S %>% svydesign(ids=~manzana+ID,
 
 ingreso_promedio_gorro = cross_join( as.data.frame(svymean(~ingreso_hog,ps_pps,deff=T)),
                                      as.data.frame(confint(svymean(~ingreso_hog,ps_pps,deff=T))))%>%
-                          rename(.,Estimacion_puntual=mean,SE=ingreso_hog)%>%
+                          rename(.,Estimacion_puntual=mean,SE=ingreso_hog,Deff=deff)%>%
                               mutate(.,CV=SE/Estimacion_puntual)
 
 
@@ -215,7 +248,7 @@ ingreso_promedio_gorro = cross_join( as.data.frame(svymean(~ingreso_hog,ps_pps,d
 
 hogares_pobres_gorro = cross_join( as.data.frame(svymean(~pobre,ps_pps,deff=T)),
                                      as.data.frame(confint(svymean(~pobre,ps_pps,deff=T))))%>%
-                            rename(.,Estimacion_puntual=mean,SE=pobre)%>%
+                            rename(.,Estimacion_puntual=mean,SE=pobre,Deff=deff)%>%
                               mutate(.,CV=SE/Estimacion_puntual)
 
 
@@ -223,7 +256,7 @@ hogares_pobres_gorro = cross_join( as.data.frame(svymean(~pobre,ps_pps,deff=T)),
 
 total_personas_gorro = cross_join( as.data.frame(svytotal(~cant_personas,ps_pps,deff=T)),
                                      as.data.frame(confint(svytotal(~cant_personas,ps_pps,deff=T))))%>%
-                          rename(.,Estimacion_puntual=total,SE=cant_personas)%>%
+                          rename(.,Estimacion_puntual=total,SE=cant_personas,Deff=deff)%>%
                               mutate(.,CV=SE/(as.data.frame(svymean(~cant_personas,ps_pps,deff=T))$mean) )
 
 #Totales
@@ -233,24 +266,27 @@ estimadores =round(rbind(ingreso_promedio_gorro,hogares_pobres_gorro,total_perso
 
 rownames(estimadores) <- c("Ingreso promedio","Proporcion hogares pobres","Total de personas")
 
-estimadores
+estimadores%>%
+  kable()%>%
+  kable_styling(position = "center", latex_options = "HOLD_position")%>%
+  kable_classic_2()
 
 ```
  
 
-*5. Para computar los errores estándar del punto anterior, ¿qué método para estimar varianza se utilizó?*
+**5. Para computar los errores estándar del punto anterior, ¿qué método para estimar varianza se utilizó?**
 
 Para estimar la varianza se utilizó el método del último conglomerado junto con la linealización de Taylor. En este método se asume que la mayor variabilidad en la estimación proviene de la primera etapa del muestreo y que las manzanas (UPM) son seleccionadas con reposición. Luego el método de la linealización de Taylor realiza una aproximación lineal del estimador y permite estimar la varianza utilizando métodos para estimadores lineales.
 
 Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: -
 
 
- *6. Calcule el ingreso per cápita en Montevideo (junto con su error estándar).*
-*Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.*
+ **6. Calcule el ingreso per cápita en Montevideo (junto con su error estándar).**
+**Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.**
 
 
 
-```{r}
+```{r, echo=T,message=F}
 
 # Calcular la estimación de razón
 
@@ -267,15 +303,16 @@ row.names(Ingreso_percapita)=""
 Ingreso_percapita
 
 ```
-*7. Calcule la estimación del error estándar del punto anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap (con 1000 réplicas).*
-*Compare los resultados obtenidos.*
+**7. Calcule la estimación del error estándar del punto anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap (con 1000 réplicas).**
+
+**Compare los resultados obtenidos.**
 
 
-```{r}
+```{r,echo=T}
 
 #jacknife
 
-jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=100)
+jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
 
 ratios_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn)
 
@@ -286,9 +323,9 @@ te_jkn
 
 ```
 
-```{r}
+```{r,echo=T}
 #Bootstrap
-#set.seed(1720)
+set.seed(1)
 boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
 
 te_boot=svyratio(~ingreso_hog, ~cant_personas,boot,return.replicates=TRUE)
@@ -300,31 +337,52 @@ te_boot
 ```
 
 
-*8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap*.
-*Interprete los resultados obtenidos.*
+**8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap.**
+**Interprete los resultados obtenidos.**
 
 ```{r}
 tibble(est= te_boot$replicates) %>% ggplot()+
-                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white')+
-                                    theme_bw()+
-                                    geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", size=1) +
-                                    geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", size=1) +
+                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
+                                    theme_bw() +
+                                    geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", linewidth=1) +
+                                    geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", linewidth=1) +
                                     labs(title="Histograma con Media y Mediana",
-                                        x="Ratios con de bootstrap",
+                                        x="Ratios con bootstrap",
                                         y="Frecuencia",
-                                        caption="Media: 1727.804  Mediana: 1728.419") +
-                                    theme(plot.title = element_text(hjust = 0.5))
+                                        caption="Media: 1726.33  Mediana: 1726.13") +
+                                    theme(plot.title = element_text(hjust = 0.5, size = 20),
+                                          axis.title.x = element_text(size = 15),                
+                                          axis.title.y = element_text(size = 15),                
+                                          axis.text.x = element_text(size = 12),                 
+                                          axis.text.y = element_text(size = 12))                  
 
-#median(te_boot$replicates)-mean(te_boot$replicates)
+
 
 ```
 
 
-#Borradores
+
+**9. Estime la cantidad de personas pobres y no pobres (junto con sus márgenes de error).**
+**Indique si los dominios de estimación son planeados o no planeados. Para este caso, utilice el Bootstrap realizado en los puntos anteriores.**
+**Comente los resultados obtenidos y proponga estrategias para mejorar la precisión de la estimación obtenida.**
+
+
+```{r}
+
+
+
+
+
+```
+
 
 
 
 ```{r}
+
+
+
+#Borradores
 ########################
 #Realizado por estratos#
 ########################
@@ -398,6 +456,6 @@ Paramatro_estrato5 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupad
 
 totales = as.numeric(Paramatro_estrato1$total+Paramatro_estrato2$total+Paramatro_estrato3$total+Paramatro_estrato4$total+Paramatro_estrato5$total)
 
-totales 
+
 ```
 
