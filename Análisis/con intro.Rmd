@@ -73,11 +73,13 @@ pop_total
 
 Para obtener el tamaño de muestra para cualquier proporción se utilizó la formula:
 
-  $$n = ((z^2 * p*(1-p))/moe^2)*moe $$
+  $$n = ((z^2 * p*(1-p))/moe^2)*moe  $$ 
 
-Como se pedía un 95% de confianza, $\alpha$ tomó el valor de 0.05. Llevando a que $z_{(1-\alpha)}$  fuera el valor de la distribución normal en el cuantil 0.975.
+Como se pedía un 95% de confianza, $\alpha$ tomó el valor de 0.05. Llevando a que $z_{(1-\sigma)}$  fuera el valor de la distribución normal en el cuantil 0.975.
 Posteriormente se asumió que p tomaba el valor de 0.5 y se sustituyó moe (margen de error) por 0.03, tal como pide la letra.
 Finalmente el tamaño de la muestra quedó en **1601**
+
+
 
 
 
@@ -93,6 +95,8 @@ n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 
 Se comenzó calculando para cada estrato su tamaño y las medidas de resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con el tamaño de muestra calculado en el punto anterior para obtener el tamaño de muestra de cada estrato según la asignación optima. 
+
+(Poner la forma de calcular el tamaño optimo)
 
 
 ```{r}
@@ -224,7 +228,7 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
  
 **Interprete los resultados.**
  
- 
+ (Agregar como se hacen los cálculos)
  
 ```{r,echo=F}
 
@@ -280,13 +284,15 @@ Para estimar la varianza se utilizó el método del último conglomerado junto c
 
 Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: -
 
+$${\Sigma}$$
+
 
  **6. Calcule el ingreso per cápita en Montevideo (junto con su error estándar).**
 **Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.**
 
 
 
-```{r, echo=T,message=F}
+```{r, echo=F,message=F}
 
 # Calcular la estimación de razón
 
@@ -314,8 +320,6 @@ Ingreso_percapita
 
 jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
 
-ratios_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn)
-
 
 te_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn,return.replicates=TRUE)
 
@@ -326,6 +330,7 @@ te_jkn
 ```{r,echo=T}
 #Bootstrap
 set.seed(1)
+
 boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
 
 te_boot=svyratio(~ingreso_hog, ~cant_personas,boot,return.replicates=TRUE)
@@ -374,12 +379,13 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 **Indique si los dominios de estimación son planeados o no planeados. Para este caso, utilice el Bootstrap realizado en los puntos anteriores.**
 **Comente los resultados obtenidos y proponga estrategias para mejorar la precisión de la estimación obtenida.**
 
+(Escribir algo sobre los dominios)
 
-```{r,message=F,echo=T}
+```{r,message=F,echo=F}
 
-boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
 
-dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>% 
+
+dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>%  
   rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
   mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
                         "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
@@ -398,10 +404,10 @@ dominios%>%
 
 ```
 
-```{r,message=F,echo=T}
+```{r,message=F,echo=F}
 
   
-# Ajustar el tamaño del texto y aplicar un tema diferente
+
 ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
   geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, position = position_dodge(0.9)) +
@@ -430,15 +436,15 @@ Para mejorar las estimaciones se podría:
 - Aumentar la cantidad de iteraciones en el bootstrap
 
 
-```{r,message=F,echo=T}
+```{r,message=F,echo=F}
 
 #Aumentando la cantidad de replicas
 
 
 set.seed(1)
-boot_3000=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=3000)
+boot_2000=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=2000)
 
-dominios_3000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_3000,svytotal)) %>% 
+dominios_2000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_2000,svytotal)) %>% 
   rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
   mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
                         "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
@@ -446,10 +452,10 @@ dominios_3000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_3000,svytotal)) 
          )
 
 
-row.names(dominios_3000)=NULL
+row.names(dominios_2000)=NULL
 
 
-dominios_3000%>%
+dominios_2000%>%
   kable()%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
@@ -464,10 +470,14 @@ dominios_3000%>%
 ```{r, echo=T, message=F}
 
 
-poblacion_pobre = U  %>% group_by(.,pobre) %>% summarise(Freq = n())
+poblacion_pobre = U  %>% group_by(.,pobre) %>% summarise(Freq = n()) #Frecuencias poblacionales de pobres
 
 
-ps_pps_postestr = postStratify(boot, strata = ~pobre, population = poblacion_pobre)
+ps_pps_postestr = postStratify(boot, strata = ~pobre, population = poblacion_pobre) #Ponderadores ajustados por post-estratificacion
+
+```
+
+```{r, echo=F, message=F}
 
 
 post_estrati = as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_postestr, svytotal))%>% 
@@ -486,87 +496,4 @@ post_estrati%>%
 
 ```
 
-
-
-
-```{r}
-
-
-
-#Borradores
-########################
-#Realizado por estratos#
-########################
-
-
-#Estrato1
-
-
-S_1 = Muestra[[1]]  %>%  mutate(prob_total=prob_upm*prob_usm,
-                w=1/prob_total)
-
-
-ps_pps_1= S_1 %>% svydesign(ids=~manzana+ID,
-                     weights=~w,
-                     data=.)
-
-Paramatro_estrato1 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_1))
-
-#Estrato2
-
-
-S_2 = Muestra[[2]]  %>%  mutate(prob_total=prob_upm*prob_usm,
-                w=1/prob_total)
-
-
-ps_pps_2= S_2 %>% svydesign(ids=~manzana+ID,
-                     weights=~w,
-                     data=.)
-
-Paramatro_estrato2 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_2))
-
-#Estrato3
-
-
-S_3 = Muestra[[3]]  %>%  mutate(prob_total=prob_upm*prob_usm,
-                w=1/prob_total)
-
-
-ps_pps_3= S_3 %>% svydesign(ids=~manzana+ID,
-                     weights=~w,
-                     data=.)
-
-Paramatro_estrato3 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_3))
-
-#Estrato4
-
-
-S_4 = Muestra[[4]]  %>%  mutate(prob_total=prob_upm*prob_usm,
-                w=1/prob_total)
-
-
-ps_pps_4= S_4 %>% svydesign(ids=~manzana+ID,
-                     weights=~w,
-                     data=.)
-
-Paramatro_estrato4 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_4))
-
-
-#Estrato5
-
-
-S_5 = Muestra[[5]]  %>%  mutate(prob_total=prob_upm*prob_usm,
-                w=1/prob_total)
-
-
-ps_pps_5= S_5 %>% svydesign(ids=~manzana+ID,
-                     weights=~w,
-                     data=.)
-
-Paramatro_estrato5 = as.data.frame(svytotal(~ingreso_hog+cant_personas+desocupados,ps_pps_5))
-
-totales = as.numeric(Paramatro_estrato1$total+Paramatro_estrato2$total+Paramatro_estrato3$total+Paramatro_estrato4$total+Paramatro_estrato5$total)
-
-
-```
 
