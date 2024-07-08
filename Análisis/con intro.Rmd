@@ -347,7 +347,7 @@ te_boot
 ```{r, echo=FALSE}
 tibble(est= te_boot$replicates) %>% ggplot()+
                                     geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
-                                    theme_bw() +
+                                    theme_minimal() +
                                     geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", linewidth=1) +
                                     geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", linewidth=1) +
                                     labs(title="Histograma de ingreso per cápita",
@@ -381,6 +381,8 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 
 ```{r,message=F,echo=T}
 
+boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
+
 dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>% 
   rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
   mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
@@ -388,10 +390,21 @@ dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>%
                         "97.5%"=Cantidad_personas+1.96*SE/sqrt(nrow(S))
          )
 
-dominios
+row.names(dominios)=NULL
+
+dominios%>%
+  kable()%>%
+  kable_styling(position = "center", latex_options = "HOLD_position")%>%
+  kable_classic_2()
 
 
 
+
+```
+
+```{r,message=F,echo=T}
+
+  
 # Ajustar el tamaño del texto y aplicar un tema diferente
 ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
@@ -429,13 +442,6 @@ ggplot(dominios, aes(x = Pobre, y = Cantidad_personas)) +
 
 
 
-
-
-
-
-
-
-
 Los dominios no fueron planeados.
 Para mejorar las estimaciones se podría:
 
@@ -448,87 +454,56 @@ Para mejorar las estimaciones se podría:
 
 
 set.seed(1)
-boot_2000=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=2000)
+boot_3000=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=3000)
 
-dominios_2000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_2000,svytotal)) %>% 
+dominios_3000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_3000,svytotal)) %>% 
   rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
   mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
                         "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
                         "97.5%"=Cantidad_personas+1.96*SE/sqrt(nrow(S))
          )
 
-dominios_2000
+
+row.names(dominios_3000)=NULL
 
 
-# Ajustar el tamaño del texto y aplicar un tema diferente
-ggplot(dominios_2000, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
-  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, position = position_dodge(0.9)) +
-  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre)",
-       x = "Grupo",
-       y = "Cantidad de Personas") +
-  theme_minimal() +
-  theme(
-    text = element_text(size = 15),
-    axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14),
-    plot.title = element_text(size = 16, hjust = 0.5)
-  ) +
-  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
-
-
-# Crear el gráfico de puntos con barras de error
-ggplot(dominios_2000, aes(x = Pobre, y = Cantidad_personas)) +
-  geom_point(size = 4, color = "black") +
-  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, color = "blue") +
-  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre) con Intervalos de Confianza",
-       x = "Grupo",
-       y = "Cantidad de Personas") +
-  theme_minimal()+
-  theme(
-    text = element_text(size = 15),
-    axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14),
-    plot.title = element_text(size = 16, hjust = 0.5)
-  ) +
-  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
+dominios_3000%>%
+  kable()%>%
+  kable_styling(position = "center", latex_options = "HOLD_position")%>%
+  kable_classic_2()
 
 
 
 
-
-  
 ```
 
 - Ajustar los ponderadores mediante post-estratificación:
 
-```{r}
+```{r, echo=T, message=F}
 
-poblacion_pobre = data.frame(
-  pobre = c(1, 0),
-  Freq = c(sum(U$pobre*U$cant_personas), sum(U$cant_personas)-sum(U$pobre*U$cant_personas)) # Frecuencias conocidas en la población
-)
 
+poblacion_pobre = U  %>% group_by(.,pobre) %>% summarise(Freq = n())
 
 
 ps_pps_postestr = postStratify(boot, strata = ~pobre, population = poblacion_pobre)
 
 
-as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_postestr, svytotal))
+post_estrati = as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_postestr, svytotal))%>% 
+  rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
+  mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
+                        "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
+                        "97.5%"=Cantidad_personas+1.96*SE/sqrt(nrow(S))
+         )
+
+row.names(post_estrati)=NULL
+
+post_estrati%>%
+  kable()%>%
+  kable_styling(position = "center", latex_options = "HOLD_position")%>%
+  kable_classic_2()
 
 ```
 
-- Ajuste de pesos mediante calibración
-
-```{r}
-
-
-# Ajustar los pesos con calibración
-ps_pps_calibrado <- calibrate(boot, formula = ~pobre, population = poblacion_pobre)
-
-# Calcular las estimaciones usando el diseño calibrado
-dominios_calibrated <- as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_calibrado, svytotal))
-```
 
 
 
