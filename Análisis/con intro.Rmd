@@ -497,3 +497,9 @@ post_estrati%>%
 ```
 
 
+# Conclusiones
+
+- Comparacion entre los estimadores y los parametros
+
+
+
