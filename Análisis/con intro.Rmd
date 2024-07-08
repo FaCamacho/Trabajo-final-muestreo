@@ -50,7 +50,7 @@ summary(U) %>%
   kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
 ```
-
+### Totales
 
 ```{r}
 # computamos totales de las variables y N
@@ -417,26 +417,12 @@ ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
     text = element_text(size = 15),
     axis.text = element_text(size = 12),
     axis.title = element_text(size = 14),
-    plot.title = element_text(size = 16, hjust = 0.5)
+    plot.title = element_text(size = 16, hjust = 0.5),
+    legend.position = "NONE"
   ) +
   scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
 
 
-# Crear el gráfico de puntos con barras de error
-ggplot(dominios, aes(x = Pobre, y = Cantidad_personas)) +
-  geom_point(size = 4, color = "black") +
-  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, color = "blue") +
-  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre) con Intervalos de Confianza",
-       x = "Grupo",
-       y = "Cantidad de Personas") +
-  theme_minimal()+
-  theme(
-    text = element_text(size = 15),
-    axis.text = element_text(size = 12),
-    axis.title = element_text(size = 14),
-    plot.title = element_text(size = 16, hjust = 0.5)
-  ) +
-  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
 
 ```
 
