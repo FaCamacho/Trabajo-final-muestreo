@@ -85,10 +85,6 @@ Finalmente el tamaño de la muestra quedó en **1601**
 
 n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 
-
-
-N_II = nrow(U) #cantidad de hogares
-
 ```
 
 
@@ -124,7 +120,7 @@ U %>%
 ```
 
 
-```{r}
+```{r, echo=F}
 tam = U %>% 
   group_by(estrato) %>% 
   summarise(N=n(),
