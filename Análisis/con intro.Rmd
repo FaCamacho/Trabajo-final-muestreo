@@ -381,26 +381,81 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 
 ```{r,message=F,echo=T}
 
-dominios = as.data.frame(svyby(~cant_personas, ~pobre,ps_pps,svytotal)) %>% 
+dominios = as.data.frame(svyby(~cant_personas, ~pobre,boot,svytotal)) %>% 
   rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
   mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
                         "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
                         "97.5%"=Cantidad_personas+1.96*SE/sqrt(nrow(S))
          )
-  
-```
 
-```{r,echo=F,message=F}
-  row.names(dominios)=NULL
-  
-  dominios%>%
-  kable()%>%
-  kable_styling(position = "center", latex_options = "HOLD_position")%>%
-  kable_classic_2()
+dominios
+
 ```
 
 
-Los dominios no fueron planeados
+
+
+
+
+
+
+
+
+Los dominios no fueron planeados.
+Para mejorar las estimaciones se podría:
+
+- Aumentar la cantidad de iteraciones en el bootstrap
+
+
+```{r,message=F,echo=T}
+
+#Aumentando la cantidad de replicas
+
+
+set.seed(1)
+boot_2000=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=2000)
+
+dominios_2000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_2000,svytotal)) %>% 
+  rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
+  mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
+                        "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
+                        "97.5%"=Cantidad_personas+1.96*SE/sqrt(nrow(S))
+         )
+
+dominios_2000
+  
+```
+
+- Ajustar los ponderadores mediante post-estratificación:
+
+```{r}
+
+poblacion_pobre = data.frame(
+  pobre = c(1, 0),
+  Freq = c(sum(U$pobre*U$cant_personas), sum(U$cant_personas)-sum(U$pobre*U$cant_personas)) # Frecuencias conocidas en la población
+)
+
+
+
+ps_pps_postestr = postStratify(boot, strata = ~pobre, population = poblacion_pobre)
+
+
+as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_postestr, svytotal))
+
+```
+
+- Ajuste de pesos mediante calibración
+
+```{r}
+
+
+# Ajustar los pesos con calibración
+ps_pps_calibrado <- calibrate(boot, formula = ~pobre, population = poblacion_pobre)
+
+# Calcular las estimaciones usando el diseño calibrado
+dominios_calibrated <- as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_calibrado, svytotal))
+```
+
 
 
 ```{r}
