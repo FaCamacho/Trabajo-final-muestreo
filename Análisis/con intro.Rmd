@@ -381,7 +381,7 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 
 ```{r,message=F,echo=T}
 
-dominios = as.data.frame(svyby(~cant_personas, ~pobre,boot,svytotal)) %>% 
+dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>% 
   rename(.,Cantidad_personas=cant_personas,SE=se,Pobre=pobre)%>%
   mutate(.,Pobre=ifelse(Pobre==1,"Pobre","No pobre"),
                         "2.5%"=Cantidad_personas-1.96*SE/sqrt(nrow(S)),
@@ -389,6 +389,41 @@ dominios = as.data.frame(svyby(~cant_personas, ~pobre,boot,svytotal)) %>%
          )
 
 dominios
+
+
+
+# Ajustar el tamaño del texto y aplicar un tema diferente
+ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
+  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, position = position_dodge(0.9)) +
+  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre)",
+       x = "Grupo",
+       y = "Cantidad de Personas") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
+
+
+# Crear el gráfico de puntos con barras de error
+ggplot(dominios, aes(x = Pobre, y = Cantidad_personas)) +
+  geom_point(size = 4, color = "black") +
+  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, color = "blue") +
+  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre) con Intervalos de Confianza",
+       x = "Grupo",
+       y = "Cantidad de Personas") +
+  theme_minimal()+
+  theme(
+    text = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
 
 ```
 
@@ -423,6 +458,45 @@ dominios_2000 = as.data.frame(svyby(~cant_personas, ~pobre,boot_2000,svytotal)) 
          )
 
 dominios_2000
+
+
+# Ajustar el tamaño del texto y aplicar un tema diferente
+ggplot(dominios_2000, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
+  geom_bar(stat = "identity", position = position_dodge(), color = "black") +
+  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, position = position_dodge(0.9)) +
+  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre)",
+       x = "Grupo",
+       y = "Cantidad de Personas") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
+
+
+# Crear el gráfico de puntos con barras de error
+ggplot(dominios_2000, aes(x = Pobre, y = Cantidad_personas)) +
+  geom_point(size = 4, color = "black") +
+  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, color = "blue") +
+  labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre) con Intervalos de Confianza",
+       x = "Grupo",
+       y = "Cantidad de Personas") +
+  theme_minimal()+
+  theme(
+    text = element_text(size = 15),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    plot.title = element_text(size = 16, hjust = 0.5)
+  ) +
+  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
+
+
+
+
+
   
 ```
 
