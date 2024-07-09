@@ -9,10 +9,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Fabricio Camacho y Luciana Viscailuz" />
 
 <meta name="date" content="2024-06-18" />
 
-<title>Entrega final muestreo I 2024</title>
+<title>Trabajo Final Muestreo</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -573,7 +574,8 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Entrega final muestreo I 2024</h1>
+<h1 class="title toc-ignore">Trabajo Final Muestreo</h1>
+<h4 class="author">Fabricio Camacho y Luciana Viscailuz</h4>
 <h4 class="date">2024-06-18</h4>
 
 </div>
@@ -897,7 +899,7 @@ N
 </div>
 </div>
 <div id="resultados" class="section level1">
-<h1>Resultados</h1>
+<h1>RESULTADOS</h1>
 <p><strong>1. Calcule el tamano de muestra para obtener un margen de
 error de ±3% a un 95%</strong> <strong>de confianza para estimar
 cualquier proporcion poblacional. Asuma un efecto de diseno de
@@ -905,7 +907,7 @@ cualquier proporcion poblacional. Asuma un efecto de diseno de
 <p>Para obtener el tamaño de muestra para cualquier proporción se
 utilizó la formula:</p>
 <p><span class="math display">\[n = ((z^2 *
-p*(1-p))/moe^2)*moe  \]</span></p>
+p*(1-p))/moe^2)*moe\]</span></p>
 <p>Como se pedía un 95% de confianza, <span class="math inline">\(\alpha\)</span> tomó el valor de 0.05. Llevando a
 que <span class="math inline">\(z_{(1-\sigma)}\)</span> fuera el valor
 de la distribución normal en el cuantil 0.975. Posteriormente se asumió
@@ -920,7 +922,9 @@ resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con
 el tamaño de muestra calculado en el punto anterior para obtener el
 tamaño de muestra de cada estrato según la asignación optima.</p>
-<p>(Poner la forma de calcular el tamaño optimo)</p>
+<p><span class="math display">\[n_h = n \\times \\frac{N_h
+\\text{sd}_{dU_h}[y]}{\\sum_{h=1}^{H} N_h
+\\text{sd}_{dU_h}[y]}\]</span></p>
 <table class="table lightable-classic-2" style="color: black; margin-left: auto; margin-right: auto; color: black; font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -1051,6 +1055,20 @@ Tamaño_optimo
 (aleatorio, estratificado, por conglomerados y en 2 etapas de
 selección).</strong> <strong>Utilice como semilla el número de grupo al
 que pertenece.</strong></p>
+<p>Para obtener la muestra final de hogares, se comenzó seleccionando
+<em>m</em> manzanas en cada estrato bajo un diseño PPS sin reemplazo,
+donde la probabilidad de que cada manzana fuera seleccionada dependía de
+la cantidad de personas que habitaban en ella, es decir, mientras mayor
+población existía en la manzana mayor probabilidad tenía esta de ser
+seleccionada. Dicho <em>m</em> se calculó tomando en cuenta el tamaño de
+muestra óptimo en cada estrato y que posteriormente se iban a extrarer
+cinco viviendas de cada manzana.</p>
+<p>Obtenida la muestra de UPMs de cada estrato, se seleccionaron cinco
+viviendas de cada manzana bajo un diseño simple.</p>
+<p>Finalmente, la muestra de hogares quedó conformada por cada uno de
+los cinco hogares extraídos de cada una de las manzanas seleccionadas de
+cada estrato. Se puede afirmar que en la muestra final hay hogares de
+los diferentes niveles socioeconomicos.</p>
 <pre class="r"><code>Muestra = list(&quot;Estrato 1&quot;=0,&quot;Estrato 2&quot;=0,&quot;Estrato 3&quot;=0,&quot;Estrato 4&quot;=0,&quot;Estrato 5&quot;=0)
 
 tamano= tam %&gt;% as.data.frame(.)%&gt;% select(.,Tamaño_optimo) %&gt;% as.vector(.)
@@ -1058,26 +1076,15 @@ tamano= tam %&gt;% as.data.frame(.)%&gt;% select(.,Tamaño_optimo) %&gt;% as.vec
 
 for(i in 1:5) {
   
-  
-  #Primera etapa
+#Primera etapa
 
-#Vamos a seleccionar 5 viviendas de cada UPM, cada UPM será seleccionada proporcional
-#a la cantidad de personas
-
-
-
-#Para el estrato 1
-
-m=round(tamano[[&quot;Tamaño_optimo&quot;]][i]/5,0) #La cantidad manzanas que vamos a sacar del estrato 
+m=round(tamano[[&quot;Tamaño_optimo&quot;]][i]/5,0) #Cantidad de manzanas que se seleccionan de cada estrato
 
 #Cantidad de personas por UPM (manzana)
-
-#Acá ordené por MOS, en lugar de manzana
 U_upm_estrato = U %&gt;% filter(,estrato==i) %&gt;%  group_by(manzana) %&gt;% summarise(MOS=sum(n())) %&gt;% arrange(MOS)
 
 
-
-#Aquí estamos seleccionando la cantidad de manzanas del estrato
+#Se seleccionan m manzanas del estrato
 set.seed(1)
 
 s_upm=sampling::strata(data=U_upm_estrato,
@@ -1090,11 +1097,10 @@ s_upm = getdata(U_upm_estrato,s_upm) %&gt;% rename(prob_upm=Prob)
 
 
 #Segunda etapa
-#Vamos a seleccionar mediante un diseño simple la cantidad de hogares dentro de las manzanas seleccionadas
+
+#Se seleccionan bajo un Diseño simple 5 hogares de cada manzana seleccionada.
 
 U_usm= U %&gt;% left_join(s_upm %&gt;% select(manzana,prob_upm)) %&gt;% filter(is.na(prob_upm)==FALSE)
-
-
 
 U_usm= U_usm %&gt;% arrange(manzana)
 
@@ -1123,7 +1129,12 @@ Error estandar (SE)</strong> <strong>- Coeficiente de variacion</strong>
 <strong>- Efecto de diseno</strong> <strong>- Margenes de error al
 95%.</strong></p>
 <p><strong>Interprete los resultados.</strong></p>
-<p>(Agregar como se hacen los cálculos)</p>
+<p>Las estimaciones se realizaron tomando en cuenta la muestra final de
+hogares y los diseños con los que se trabajó.</p>
+<p><span class="math display">\[\hat Y_{HT}=\sum\limits_{i\in s}
+\frac{y_i}{\pi_i} \]</span> donde <span class="math display">\[pi=n\frac{x_i}{\sum\limits_{i\in
+U}x_i}\]</span></p>
+<p>#seguir</p>
 <table class="table lightable-classic-2" style="color: black; margin-left: auto; margin-right: auto; color: black; font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -1231,19 +1242,50 @@ Luego el método de la linealización de Taylor realiza una aproximación
 lineal del estimador y permite estimar la varianza utilizando métodos
 para estimadores lineales.</p>
 <p>Survey, el paquete que se utilizó en el punto anterior por defecto
-utiliza la formula: -</p>
-<p><span class="math display">\[{\Sigma}\]</span></p>
+utiliza la formula:</p>
+<p><span class="math display">\[\hat
+V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat
+Y)**\]</span></p>
 <p><strong>6. Calcule el ingreso per cápita en Montevideo (junto con su
 error estándar).</strong> <strong>Indique el tipo de parámetro y qué
 método fue utilizado por defecto por el paquete survey para la
 estimación del error estándar.</strong></p>
+<p>En este punto se obtiene un estimador complejo denominado “Ratio”,
+debido a que surge como cociente de dos totales, ingresos totales en
+Montevideo y cantidad de habitantes. Para realizar su estimación se
+debió contar previamente con la estimación de dichos totales.</p>
+<p>Por defecto, el paquete survey utiliza la “Linealización de Taylor” y
+se aproxima <span class="math inline">\(\\hat{\\theta}\)</span>, el
+parámetro de interés, por su desarrollo de primer orden. Como se utiliza
+una aproximación del parámetro, finalmente se obtiene la varianza del
+pseudo-estimador que es la que se conoce como la aproximación de la
+varianza.</p>
+<p><span class="math display">\[\\hat{V}(\\hat{\\theta}) = \\sum_{i \\in
+s} \\sum_{j \\in s} \\frac{\\Delta_{ij}}{\\pi_{ij}}
+\\frac{\\hat{u}_i}{\\pi_i} \\frac{\\hat{u}_j}{\\pi_j}\]</span></p>
+<p>Siendo $\hat{u}<em>i=</em>{q=1}^Q\hat{a}_q_qi #CAMBIAR FORMULAS POR
+LA DE V(R)??</p>
+<p>Al realizarle la raíz cuadrada a la estimación de la varianza se
+obtiene finalmente el <span class="math inline">\(SE\)</span>.</p>
 <pre><code>##   Ingreso_Percapita       SE
 ## 1          1726.827 37.78743</code></pre>
 <p><strong>7. Calcule la estimación del error estándar del punto
 anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap
 (con 1000 réplicas).</strong></p>
 <p><strong>Compare los resultados obtenidos.</strong></p>
-<pre class="r"><code>#jacknife
+<p>Jackknife y Bootstrap son dos métodos de remuestreo que tienen como
+uno de sus objetivos obtener el <span class="math inline">\(SE\)</span>
+de estimadores no lineales. La idea general de estos es que obtienen
+replicas de forma independiente a partir de la muestra original y
+posteriormente, para cada una de estas se calcula la estimación del
+parámetro. La varianza del estimador se obtiene a partir de observar la
+varianza entre las muestras.</p>
+<p>Se comenzó realizando la estimación del error estándar bajo el método
+de Jackknife. Como el diseño es estratificado, se apliza Jackknife
+dentro de cada estrato. En este metodo se obtienen las réplicas
+eliminando de una unidad a la vez, en este caso, como el diseño es por
+conglomerados, eliminar una unidad se trauce en eliminar una UPM.</p>
+<pre class="r"><code>#jackknife
 
 jkn=as.svrepdesign(design=ps_pps,type=&#39;JKn&#39;, replicate=1000)
 
@@ -1258,6 +1300,11 @@ te_jkn</code></pre>
 ## SEs=
 ##          [,1]
 ## [1,] 37.88454</code></pre>
+<p>Luego, se estimó nuevamente el error estándar pero bajo el método de
+Bootstrap, con la variación de Rao-Wu, que se utiliza en diseños
+aleatorios, estratificados y en varia etapas de selección, como es el
+caso.</p>
+<p>#TERMINAR</p>
 <pre class="r"><code>#Bootstrap
 set.seed(1)
 
@@ -1468,6 +1515,12 @@ Pobre
 </tr>
 </tbody>
 </table>
+</div>
+<div id="conclusiones" class="section level1">
+<h1>Conclusiones</h1>
+<ul>
+<li>Comparacion entre los estimadores y los parametros</li>
+</ul>
 </div>
 
 

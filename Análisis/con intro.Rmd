@@ -6,7 +6,8 @@ date: "2024-06-18"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(echo = F,fig.cap = TRUE)
+
 ```
 
 
@@ -78,25 +79,17 @@ pop_total
 
 Para obtener el tamaño de muestra para cualquier proporción se utilizó la formula:
 
-  $$n = ((z^2 * p*(1-p))/moe^2)*moe  $$ 
+  $$n = ((z^2 * p*(1-p))/moe^2)*moe$$ 
 
 Como se pedía un 95% de confianza, $\alpha$ tomó el valor de 0.05. Llevando a que $z_{(1-\sigma)}$  fuera el valor de la distribución normal en el cuantil 0.975.
 Posteriormente se asumió que p tomaba el valor de 0.5 y se sustituyó moe (margen de error) por 0.03, tal como pide la letra.
 Finalmente el tamaño de la muestra quedó en **1601**
-
-
-
-
 
 ```{r}
 
 n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 
 ```
-
-
-
-
 
 **2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.**
 
@@ -154,7 +147,7 @@ tam = U %>%
 **Utilice como semilla el número de grupo al que pertenece.**
 
 
-Para obtener la muestra final de hogares, se comenzó seleccionando m manzanas en cada estrato bajo un diseño PPS sin reemplazo, donde la probabilidad de que cada manzana fuera seleccionada dependía de la cantidad de personas que habitaban en ella, es decir, mientras mayor población existía en la manzana mayor probabilidad tenía esta de ser seleccionada. Dicho m se calculó tomando en cuenta el tamaño de muestra óptimo en cada estrato y que posteriormente se iban a extrarer cinco viviendas de cada manzana.
+Para obtener la muestra final de hogares, se comenzó seleccionando *m* manzanas en cada estrato bajo un diseño PPS sin reemplazo, donde la probabilidad de que cada manzana fuera seleccionada dependía de la cantidad de personas que habitaban en ella, es decir, mientras mayor población existía en la manzana mayor probabilidad tenía esta de ser seleccionada. Dicho *m* se calculó tomando en cuenta el tamaño de muestra óptimo en cada estrato y que posteriormente se iban a extrarer cinco viviendas de cada manzana.
 
 Obtenida la muestra de UPMs de cada estrato, se seleccionaron cinco viviendas de cada manzana bajo un diseño simple.
 
@@ -233,11 +226,15 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
 **Interprete los resultados.**
  
 
-Las estimaciones se realizaron tomando en cuenta la muestra final de hogares y los diseños con los que se trabajó.
+Las estimaciones se realizaron tomando en cuenta la muestra final de hogares y el diseño con el que se trabajó.
 
-$$ \hat Y_{HT}=\sum\limits_{i\in s} \frac{y_i}{\pi_i} $$ donde $$pi=n\frac{x_i}{\sum\limits_{i\in U}x_i}$$
+$$\hat Y_{HT}=\sum\limits_{i\in s} \frac{y_i}{\pi_i}$$ 
 
-#seguir
+donde 
+
+$$\pi=n\frac{x_i}{\sum\limits_{i\in U}x_i}$$
+
+# Seguir
 
 
 ```{r,echo=F}
@@ -309,7 +306,7 @@ $$\\hat{V}(\\hat{\\theta}) = \\sum_{i \\in s} \\sum_{j \\in s} \\frac{\\Delta_{i
 
 Siendo $\\hat{u}_i=\sum\limits_{q=1}^Q\\hat{a}_q\y_qi  #CAMBIAR FORMULAS POR LA DE V(R)??
 
-Al realizarle la raíz cuadrada a la estimación de la varianza se obtiene finalmente el $SE$.
+Al realizarle la raíz cuadrada a la estimación de la varianza se obtiene finalmente el ${\sigma}$.
 
 
 ```{r, echo=F,message=F}
@@ -333,10 +330,10 @@ Ingreso_percapita
 
 **Compare los resultados obtenidos.**
 
-Jackknife y Bootstrap son dos métodos de remuestreo que tienen como uno de sus objetivos obtener el $SE$ de estimadores no lineales.
-La idea general de estos es que obtienen replicas de forma independiente a partir de la muestra original y posteriormente, para cada una de estas se calcula la estimación del parámetro. La varianza del estimador se obtiene a partir de observar la varianza entre las muestras.
+Jackknife y Bootstrap son dos métodos de remuestreo que tienen como uno de sus objetivos obtener el ${\sigma}$ de estimadores no lineales.
+La idea general de estos es que obtienen replicas de forma independiente a partir de la muestra original y posteriormente, para cada una de estas se calcula la estimación del parámetro. La varianza del estimador se obtiene a partir de observar la varianza entre las replicas.
 
-Se comenzó realizando la estimación del error estándar bajo el método de Jackknife. Como el diseño es estratificado, se apliza Jackknife dentro de cada estrato. En este metodo se obtienen las réplicas eliminando de una unidad a la vez, en este caso, como el diseño es por conglomerados, eliminar una unidad se trauce en eliminar una UPM.  
+Se comenzó realizando la estimación del error estándar bajo el método de Jackknife. Como el diseño es estratificado, se apliCa Jackknife dentro de cada estrato. En este metodo se obtienen las réplicas eliminando de una unidad a la vez, en este caso, como el diseño es por conglomerados, eliminar una unidad se trauce en eliminar una UPM.  
 
 ```{r,echo=T}
 
@@ -351,7 +348,7 @@ te_jkn
 
 ```
 Luego, se estimó nuevamente el error estándar pero bajo el método de Bootstrap, con la variación de Rao-Wu, que se utiliza en diseños
-aleatorios, estratificados y en varia etapas de selección, como es el caso. 
+aleatorios, estratificados y en varias etapas de selección, como es el caso. 
 
 #TERMINAR
 
@@ -374,7 +371,7 @@ te_boot
 **8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap.**
 **Interprete los resultados obtenidos.**
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,fig.cap="Gráfico 1: Este es el primer gráfico"}
 tibble(est= te_boot$replicates) %>% ggplot()+
                                     geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
                                     theme_minimal() +
@@ -408,7 +405,8 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 **Indique si los dominios de estimación son planeados o no planeados. Para este caso, utilice el Bootstrap realizado en los puntos anteriores.**
 **Comente los resultados obtenidos y proponga estrategias para mejorar la precisión de la estimación obtenida.**
 
-(Escribir algo sobre los dominios)
+Vamos a emplear los dominios dentro de nuestra población correspondientes a *Pobres* y *No pobres*, la finalidad es poder realizar estimaciones ara estas subpoblaiones de interés. Por medio de la función *svyby* del paquete *Survey* es que estimamos los totales para cada subpoblación.
+
 
 ```{r,message=F,echo=F}
 
@@ -435,7 +433,7 @@ dominios%>%
 
 ```{r,message=F,echo=F}
 
-  
+
 
 ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
@@ -459,11 +457,11 @@ ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
 
 
 
-Los dominios no fueron planeados.
-Para mejorar las estimaciones se podría:
+En nuestro caso los dominios no fueron planeados por lo tanto podemos recurrir a algunas estrategias para mejorar las estimaciones
 
-- Aumentar la cantidad de iteraciones en el bootstrap
+- Aumentar la cantidad de iteraciones en el bootstrap.
 
+Al aumentar el tamaño de la muestra en las iteraciones podemos asumir que experimentaremos una menor varianza en las estimaciones
 
 ```{r,message=F,echo=F}
 
@@ -494,14 +492,37 @@ dominios_2000%>%
 
 ```
 
+El incremento en la cantidad de iteraciones no reduce la varinza en la estimación de los dominios.
+
 - Ajustar los ponderadores mediante post-estratificación:
+
+Acorde al trabajo realizado, contamos con la cantidad de personas pobres y no pobres en **U**, por lo que podemos ajustar los ponderadores con dicha información.
+
+```{r}
+
+data.frame("Cantidad de personas pobres y no pobres en U"=c("No pobre","Pobre"),
+                           Frecuencia=c(sum(U$cant_personas)-sum(U$cant_personas*U$pobre),
+                                        sum(U$cant_personas*U$pobre)
+                                               ))%>%
+  kable()%>%
+  kable_styling(position = "center", latex_options = "HOLD_position")%>%
+  kable_classic_2()
+
+
+
+
+```
+
+Procedemos a reponderar con la información disponible.
 
 ```{r, echo=T, message=F}
 
+poblacion_pobre=data.frame(pobre=c(0,1),
+           Freq=c(sum(U$cant_personas)-sum(U$cant_personas*U$pobre),
+                                        sum(U$cant_personas*U$pobre)))
 
-poblacion_pobre = U  %>% group_by(.,pobre) %>% summarise(Freq = n()) #Frecuencias poblacionales de pobres
 
-
+set.seed(1)
 ps_pps_postestr = postStratify(boot, strata = ~pobre, population = poblacion_pobre) #Ponderadores ajustados por post-estratificacion
 
 ```
@@ -524,6 +545,8 @@ post_estrati%>%
   kable_classic_2()
 
 ```
+
+
 
 
 # Conclusiones
