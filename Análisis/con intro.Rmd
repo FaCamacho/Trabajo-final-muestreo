@@ -301,7 +301,15 @@ $$\hat V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat Y)**$$
 **Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.**
 
 
-Parámetro complejo
+En este punto se obtiene un estimador complejo denominado "Ratio", debido a que surge como cociente de dos totales, ingresos totales en Montevideo y cantidad de habitantes. Para realizar su estimación se debió contar previamente con la estimación de dichos totales.
+
+Por defecto, el paquete survey utiliza la "Linealización de Taylor" y se aproxima $\\hat{\\theta}$, el parámetro de interés, por su desarrollo de primer orden. Como se utiliza una aproximación del parámetro, finalmente se obtiene la varianza del pseudo-estimador que es la que se conoce como la aproximación de la varianza.
+
+$$\\hat{V}(\\hat{\\theta}) = \\sum_{i \\in s} \\sum_{j \\in s} \\frac{\\Delta_{ij}}{\\pi_{ij}} \\frac{\\hat{u}_i}{\\pi_i} \\frac{\\hat{u}_j}{\\pi_j}$$
+
+Siendo $\\hat{u}_i=\sum\limits_{q=1}^Q\\hat{a}_q\y_qi  #CAMBIAR FORMULAS POR LA DE V(R)??
+
+Al realizarle la raíz cuadrada a la estimación de la varianza se obtiene finalmente el $SE$.
 
 
 ```{r, echo=F,message=F}
@@ -325,10 +333,14 @@ Ingreso_percapita
 
 **Compare los resultados obtenidos.**
 
+Jackknife y Bootstrap son dos métodos de remuestreo que tienen como uno de sus objetivos obtener el $SE$ de estimadores no lineales.
+La idea general de estos es que obtienen replicas de forma independiente a partir de la muestra original y posteriormente, para cada una de estas se calcula la estimación del parámetro. La varianza del estimador se obtiene a partir de observar la varianza entre las muestras.
+
+Se comenzó realizando la estimación del error estándar bajo el método de Jackknife. Como el diseño es estratificado, se apliza Jackknife dentro de cada estrato. En este metodo se obtienen las réplicas eliminando de una unidad a la vez, en este caso, como el diseño es por conglomerados, eliminar una unidad se trauce en eliminar una UPM.  
 
 ```{r,echo=T}
 
-#jacknife
+#jackknife
 
 jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
 
@@ -338,6 +350,11 @@ te_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn,return.replicates=TRUE)
 te_jkn
 
 ```
+Luego, se estimó nuevamente el error estándar pero bajo el método de Bootstrap, con la variación de Rao-Wu, que se utiliza en diseños
+aleatorios, estratificados y en varia etapas de selección, como es el caso. 
+
+#TERMINAR
+
 
 ```{r,echo=T}
 #Bootstrap
