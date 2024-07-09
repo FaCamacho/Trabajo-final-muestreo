@@ -68,7 +68,7 @@ pop_total
 
 ```
 
-# Resultados
+# RESULTADOS
 
 
 
@@ -231,8 +231,14 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
  
 **Interprete los resultados.**
  
- (Agregar como se hacen los cálculos)
- 
+
+Las estimaciones se realizaron tomando en cuenta la muestra final de hogares y los diseños con los que se trabajó.
+
+$$ \hat Y_{HT}=\sum\limits_{i\in s} \frac{y_i}{\pi_i} $$ donde $$pi=n\frac{x_i}{\sum\limits_{i\in U}x_i}$$
+
+#seguir
+
+
 ```{r,echo=F}
 
 #Diseño estratificado en dos etapas 
@@ -285,14 +291,16 @@ estimadores%>%
 
 Para estimar la varianza se utilizó el método del último conglomerado junto con la linealización de Taylor. En este método se asume que la mayor variabilidad en la estimación proviene de la primera etapa del muestreo y que las manzanas (UPM) son seleccionadas con reposición. Luego el método de la linealización de Taylor realiza una aproximación lineal del estimador y permite estimar la varianza utilizando métodos para estimadores lineales.
 
-Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: -
+Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: 
 
-$${\Sigma}$$
+$$\hat V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat Y)**$$
 
 
  **6. Calcule el ingreso per cápita en Montevideo (junto con su error estándar).**
 **Indique el tipo de parámetro y qué método fue utilizado por defecto por el paquete survey para la estimación del error estándar.**
 
+
+Parámetro complejo
 
 
 ```{r, echo=F,message=F}
