@@ -7,7 +7,10 @@ date: "2024-06-18"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = F)
 ```
+
+
 # INTRODUCCIÓN
+
 
 El objetivo de este proyecto es realizar estimaciones de diferentes parámetros a partir de varios de los metodos ya vistos en clase.
 Para cumplir el objetivo la obtención de la muestra es una etapa clave, y para esta se comenzó seleccionando una muestra aleatoria de los hogares de Montevideo bajo un
@@ -68,6 +71,7 @@ pop_total
 # Resultados
 
 
+
 **1. Calcule el tamano de muestra para obtener un margen de error de ±3% a un 95%**
 **de confianza para estimar cualquier proporcion poblacional. Asuma un efecto de diseno de 1.5.**
 
@@ -91,13 +95,14 @@ n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 
 
 
+
+
 **2. Con el tamano de muestra calculado en el punto anterior, asigne el mismo por estrato de forma optima, utilizando como variable auxiliar el ingreso del hogar.**
 
 Se comenzó calculando para cada estrato su tamaño y las medidas de resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con el tamaño de muestra calculado en el punto anterior para obtener el tamaño de muestra de cada estrato según la asignación optima. 
 
-(Poner la forma de calcular el tamaño optimo)
-
+$$n_h = n \\times \\frac{N_h \\text{sd}_{dU_h}[y]}{\\sum_{h=1}^{H} N_h \\text{sd}_{dU_h}[y]}$$
 
 ```{r}
 
@@ -142,8 +147,18 @@ tam = U %>%
 ```
 
 
+
+
 **3. Seleccione una muestra bajo el diseño propuesto (aleatorio, estratificado, por conglomerados y en 2 etapas de selección).**
 **Utilice como semilla el número de grupo al que pertenece.**
+
+
+Para obtener la muestra final de hogares, se comenzó seleccionando m manzanas en cada estrato bajo un diseño PPS sin reemplazo, donde la probabilidad de que cada manzana fuera seleccionada dependía de la cantidad de personas que habitaban en ella, es decir, mientras mayor población existía en la manzana mayor probabilidad tenía esta de ser seleccionada. Dicho m se calculó tomando en cuenta el tamaño de muestra óptimo en cada estrato y que posteriormente se iban a extrarer cinco viviendas de cada manzana.
+
+Obtenida la muestra de UPMs de cada estrato, se seleccionaron cinco viviendas de cada manzana bajo un diseño simple.
+
+Finalmente, la muestra de hogares quedó conformada por cada uno de los cinco hogares extraídos de cada una de las manzanas seleccionadas de cada estrato. Se puede afirmar que en la muestra final hay hogares de los diferentes niveles socioeconomicos.
+
 
 
 ```{r, echo=T, message=F}
@@ -156,26 +171,15 @@ tamano= tam %>% as.data.frame(.)%>% select(.,Tamaño_optimo) %>% as.vector(.)
 
 for(i in 1:5) {
   
-  
-  #Primera etapa
+#Primera etapa
 
-#Vamos a seleccionar 5 viviendas de cada UPM, cada UPM será seleccionada proporcional
-#a la cantidad de personas
-
-
-
-#Para el estrato 1
-
-m=round(tamano[["Tamaño_optimo"]][i]/5,0) #La cantidad manzanas que vamos a sacar del estrato 
+m=round(tamano[["Tamaño_optimo"]][i]/5,0) #Cantidad de manzanas que se seleccionan de cada estrato
 
 #Cantidad de personas por UPM (manzana)
-
-#Acá ordené por MOS, en lugar de manzana
 U_upm_estrato = U %>% filter(,estrato==i) %>%  group_by(manzana) %>% summarise(MOS=sum(n())) %>% arrange(MOS)
 
 
-
-#Aquí estamos seleccionando la cantidad de manzanas del estrato
+#Se seleccionan m manzanas del estrato
 set.seed(1)
 
 s_upm=sampling::strata(data=U_upm_estrato,
@@ -188,11 +192,10 @@ s_upm = getdata(U_upm_estrato,s_upm) %>% rename(prob_upm=Prob)
 
 
 #Segunda etapa
-#Vamos a seleccionar mediante un diseño simple la cantidad de hogares dentro de las manzanas seleccionadas
+
+#Se seleccionan bajo un Diseño simple 5 hogares de cada manzana seleccionada.
 
 U_usm= U %>% left_join(s_upm %>% select(manzana,prob_upm)) %>% filter(is.na(prob_upm)==FALSE)
-
-
 
 U_usm= U_usm %>% arrange(manzana)
 
