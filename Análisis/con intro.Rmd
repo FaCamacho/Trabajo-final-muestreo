@@ -57,6 +57,9 @@ summary(U) %>%
 ```
 ### Totales
 
+Describir algo
+
+
 ```{r}
 # computamos totales de las variables y N
 pop_total = U %>% summarise(Total_personas=sum(cant_personas),
@@ -328,7 +331,7 @@ Ingreso_percapita
 ```
 **7. Calcule la estimación del error estándar del punto anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap (con 1000 réplicas).**
 
-**Compare los resultados obtenidos.**
+
 
 Jackknife y Bootstrap son dos métodos de remuestreo que tienen como uno de sus objetivos obtener el ${\sigma}$ de estimadores no lineales.
 La idea general de estos es que obtienen replicas de forma independiente a partir de la muestra original y posteriormente, para cada una de estas se calcula la estimación del parámetro. La varianza del estimador se obtiene a partir de observar la varianza entre las replicas.
@@ -337,7 +340,7 @@ Se comenzó realizando la estimación del error estándar bajo el método de Jac
 
 ```{r,echo=T}
 
-#jackknife
+#Jackknife
 
 jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
 
@@ -347,10 +350,9 @@ te_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn,return.replicates=TRUE)
 te_jkn
 
 ```
-Luego, se estimó nuevamente el error estándar pero bajo el método de Bootstrap, con la variación de Rao-Wu, que se utiliza en diseños
-aleatorios, estratificados y en varias etapas de selección, como es el caso. 
+Luego, se estimó nuevamente el error estándar pero bajo el método de Bootstrap, con la variación de Rao-Wu, que se utiliza en diseños aleatorios, estratificados y en varia etapas de selección, como es el caso. En este método se obtienen replicas de cada estrato bajo un MAS y luego de varios calculos se obtienen diferentes estimaciones del parámetro de intrés, estas estimaciones se utilizan para calcular la varianza del estimador.
 
-#TERMINAR
+
 
 
 ```{r,echo=T}
@@ -366,6 +368,13 @@ te_boot
 
 
 ```
+##*Comparaciones*:
+
+Tanto en el punto 6 como el 7 se obtuvieron estimaciones del ingreso per-capita y de su error estándar. 
+La estimación del ingreso percapita fue la misma en los tres casos, la diferencia, aunque no mucha, surgió en la estimación del error estándar.
+En todos los métodos las estimaciones se encuentran entre 37 y 38, siendo el método de Bootstrap el que obtuvo un menor %SE% con un valor de 37.54098, y Jackknife el mayor con 37.88454. En conlusión, si existe una diferencia entre las estimaciones de los métodos pero por lo menos en este caso dichas diferencias no son muy importantes.
+
+
 
 
 **8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap.**
