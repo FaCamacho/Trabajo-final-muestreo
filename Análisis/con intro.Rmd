@@ -69,6 +69,12 @@ summary(U) %>%
   kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
 ```
+Se cuenta con la información de 452.721 hogares donde cada uno pertenece a una de las 3480 manzanas. 
+Para cada hogar se tiene la información de la cantidad de personas que habitan en él y si estas personas están ocupadas, desocupadas o ninguna de las anteriores, que se entiende como personas que no trabajan ni buscan hacerlo. 
+Observando la tabla se puede notar que la media de los ocupados, 1,323, es mucho mayor que la de los desocupados, 0.1265.
+Además se tiene la información de si los hogares alquilan o no y cuánto pagan por ello.
+La media del precio del alquiler se encuentra en $33.713, mientras que el ingreso promedio del hogar está en $4653, una diferencia muy notable.
+
 ### Totales
 
 Describir algo
@@ -427,6 +433,16 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 
 ```
 
+En el presente gráfico se puede observar la distribución del ingreso per cápita bajo el diseño de Bootstrap.
+Podría decirse que se asemeja a la distribución de la normal, debido a que se puede observar que la distribución es aproximadamente simétrica, especialmente por las colas, donde la frecuencia es muy baja y va aumentando a medida que se acerca al centro de la distribución.
+
+La distribución nos permite realizar las siguientes interpretaciones:	
+
+-Muy pocos hogares tienen un ingreso per cápita menor o igual a 1650 o mayor a 1800. Esto se puede ver representado en las colas de la distribución.
+
+-El ingreso per cápita se acumula entre los 1700 y 1750, tal como se ve en el centro del gráfico.
+
+-La distribución va “pegando saltos” bastante notables para varios niveles del ingreso per cápita. Estos saltos se podrían interpretar como los cambios en el parámetro según el nivel socioeconómico de los hogares, mostrando que la diferencia entre un nivel y otro es muy marcada.
 
 
 **9. Estime la cantidad de personas pobres y no pobres (junto con sus márgenes de error).**
