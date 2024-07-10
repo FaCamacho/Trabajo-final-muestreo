@@ -411,7 +411,7 @@ En todos los métodos las estimaciones se encuentran entre 37 y 38, siendo el m�
 
 ```{r, echo=FALSE,fig.cap="Gráfico 1: 1000 réplicas realizadas bajo boostrap"}
 tibble(est= te_boot$replicates) %>% ggplot()+
-                                    geom_histogram(aes(x=est),bins=20,fill='orange3',color='white') +
+                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
                                     theme_minimal() +
                                     geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", linewidth=1) +
                                     geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", linewidth=1) +
@@ -460,9 +460,9 @@ La cantidad de personas pobres y no pobres que nos interesa estimar es la siguie
 ```{r}
 
 personas_pobres = data.frame(Pobre=c("No pobre","Pobre"),
-                             Freq=c(sum(U$cant_personas)-sum(U$cant_personas*U$pobre),
+                             Freq=c(round((sum(U$cant_personas)-sum(U$cant_personas*U$pobre)),2),
                                     sum(U$cant_personas*U$pobre)))%>%
-  mutate( Prop=Freq/sum(U$cant_personas))
+  mutate( Prop=round(Freq/sum(U$cant_personas),2))
 
 
 personas_pobres%>%
@@ -532,8 +532,6 @@ Para mejorar las estimaciones se podría:
 
 A priori la idea de un mayor tamaño de muestra nos sugiere que vamos a contar con mejores estimaciones, no obstante vemos que esto no es tan así dado que los totales son los mismos e incluso con mayor varianza, por lo que descartamos esta idea.
 
-Vemos que incluso la distribución del estimador ya no mantiene las mismas características de normalidad que el que realizamos con 1000 réplicas.
-
 
 ```{r,message=F,echo=F}
 
@@ -559,41 +557,13 @@ dominios_2000%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
-te_boot2000=svyratio(~ingreso_hog, ~cant_personas,boot_2000,return.replicates=TRUE)
 
-
-```
-
-
-```{r, echo=FALSE,fig.cap="Gráfico 3: 2000 réplicas realizadas bajo boostrap"}
-tibble(est= te_boot2000$replicates) %>% ggplot()+
-                                    geom_histogram(aes(x=est),bins=20,fill='orange3',color='white') +
-                                    theme_minimal() +
-                                    geom_vline(aes(xintercept=mean(te_boot2000$replicates)), color="blue", linetype="dashed", linewidth=1) +
-                                    geom_vline(aes(xintercept=median(te_boot2000$replicates)), color="red", linetype="dotted", linewidth=1) +
-                                    labs(title="Histograma de ingreso per cápita",
-                                         subtitle = "",
-                                        x="Ratios",
-                                        y="Frecuencia",
-                                        caption="Asímetría: -0.09  Curtosis: 0.36") +
-                                    theme(plot.title = element_text(hjust = 0.5, size = 20),
-                                          axis.title.x = element_text(size = 15),                
-                                          axis.title.y = element_text(size = 15),                
-                                          axis.text.x = element_text(size = 12),                 
-                                          axis.text.y = element_text(size = 12))                  
-
-
-#asimetría
-#skewness(te_boot2000$replicates)
-
-
-#Curtosis
-#kurtosis(te_boot2000$replicates)-3
 
 
 ```
 
-En lo que respecta a esta estrategia no mejora las estimaciones.
+
+
 
 
 - Ajustar los ponderadores mediante post-estratificación:
