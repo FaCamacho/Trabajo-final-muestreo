@@ -29,7 +29,7 @@ caption {
 
 
 El objetivo de este proyecto es realizar estimaciones de diferentes parámetros a partir de varios de los metodos ya vistos en clase.
-Para cumplir el objetivo la obtención de la muestra es una etapa clave, y para esta se comenzó seleccionando una muestra aleatoria de los hogares de Montevideo bajo un
+Para cumplir el objetivo la obtención de la muestra es una etapa clave. Para esta se comenzó seleccionando una muestra aleatoria de los hogares de Montevideo bajo un
 diseño estratificado, por conglomerados y en dos etapas de selección. Siendo las UPM las manzanas y la USM los hogares.
 Para la selección de las UPM y posteriormente las USM se combinaron diferentes diseños según lo pautado.
 Finalmente, una vez obtenidas las muestras y las estimaciones se realizaron comparaciones obteniendo así diferentes conclusiones.
