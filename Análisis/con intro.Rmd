@@ -407,7 +407,7 @@ En todos los métodos las estimaciones se encuentran entre 37 y 38, siendo el m�
 
 ```{r, echo=FALSE,fig.cap="Gráfico 1: 1000 réplicas realizadas bajo boostrap"}
 tibble(est= te_boot$replicates) %>% ggplot()+
-                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
+                                    geom_histogram(aes(x=est),bins=20,fill='orange3',color='white') +
                                     theme_minimal() +
                                     geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", linewidth=1) +
                                     geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", linewidth=1) +
@@ -492,7 +492,7 @@ ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
     plot.title = element_text(size = 16, hjust = 0.5),
     legend.position = "NONE"
   ) +
-  scale_fill_manual(values = c("Pobre" = "red", "No pobre" = "blue"))
+  scale_fill_manual(values = c("Pobre" = "tomato1", "No pobre" = "steelblue"))
 
 
 
@@ -538,7 +538,7 @@ te_boot2000=svyratio(~ingreso_hog, ~cant_personas,boot_2000,return.replicates=TR
 
 ```{r, echo=FALSE,fig.cap="Gráfico 3: 2000 réplicas realizadas bajo boostrap"}
 tibble(est= te_boot2000$replicates) %>% ggplot()+
-                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
+                                    geom_histogram(aes(x=est),bins=20,fill='orange3',color='white') +
                                     theme_minimal() +
                                     geom_vline(aes(xintercept=mean(te_boot2000$replicates)), color="blue", linetype="dashed", linewidth=1) +
                                     geom_vline(aes(xintercept=median(te_boot2000$replicates)), color="red", linetype="dotted", linewidth=1) +
@@ -572,10 +572,16 @@ En lo que respecta a esta estrategia no mejora las estimaciones.
 ```{r, echo=T, message=F}
 
 
-poblacion_pobre = U  %>% group_by(.,pobre) %>% summarise(Freq = n()) #Frecuencias poblacionales de pobres
+hogares_pobres = U  %>% group_by(.,pobre) %>% summarise(Freq = n()) #Frecuencias poblacionales de pobres
+
+#personas_pobres = data.frame(pobre=c("No pobre","Pobre"),
+ #                            Freq=c(sum(U$cant_personas)-sum(U$cant_personas*U$pobre),
+  #                                  sum(U$cant_personas*U$pobre)))%>%
+  #mutate( Prop=Freq/sum(U$cant_personas))
 
 
-ps_pps_postestr = postStratify(boot, strata = ~pobre, population = poblacion_pobre) #Ponderadores ajustados por post-estratificacion
+
+ps_pps_postestr = postStratify(boot, strata = ~pobre, population = hogares_pobres) #Ponderadores ajustados por post-estratificacion
 
 ```
 
@@ -595,6 +601,47 @@ post_estrati%>%
   kable(.,caption="Tabla 7: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' mediante postestratificación")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
+
+```
+
+
+```{r}
+
+#Armado de gráficos para resumen
+
+# Crear los dataframes
+dominios = data.frame(
+  Pobre = c("No pobre", "Pobre"),
+  Cantidad_personas = c(1051268.5, 159766.9),
+  SE = c(23581.50, 25549.17),
+  low = c(1050113, 158515),
+  up = c(1052424.0, 161018.8)
+)
+
+dominios_2000 = data.frame(
+  Pobre = c("No pobre", "Pobre"),
+  Cantidad_personas = c(1051268.5, 159766.9),
+  SE = c(24008.53, 25761.55),
+  low = c(1050092.0, 158504.5),
+  up = c(1052444.9, 161029.2)
+)
+
+post_estrati = data.frame(
+  Pobre = c("No pobre", "Pobre"),
+  Cantidad_personas = c(1057998.4, 148813.4),
+  SE = c(19979.58, 11853.15),
+  low = c(1057019.4, 148232.6),
+  up = c(1058977.4, 149394.2)
+)
+
+# Añadir una columna para identificar los conjuntos de datos
+dominios$Estrategia = "1000 réplicas"
+dominios_2000$Estrategia = "2000 réplicas"
+post_estrati$Estrategia = "Postestratificacion"
+
+# Combinar los dataframes
+data = rbind(dominios, dominios_2000, post_estrati)
+
 
 ```
 
