@@ -1,14 +1,29 @@
 ---
 title: "Trabajo Final Muestreo"
 author: "Fabricio Camacho y Luciana Viscailuz"
-output: html_document
+output: 
+  html_document:
+    fig_caption: true
 date: "2024-06-18"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(echo = F,fig.cap = T)
 ```
 
+
+<style>
+.caption {
+  text-align: center;
+}
+</style>
+
+<style>
+caption {
+  caption-side: bottom;
+  text-align: center;
+}
+</style>
 
 # INTRODUCCIÓN
 
@@ -50,7 +65,7 @@ U <- read_csv(here("Datos/Montevideo GR1.csv"))
 ```{r}
 
 summary(U) %>%
-  kable() %>%
+  kable(.,caption="Tabla 1: Medidas de resumen") %>%
   kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
 ```
@@ -65,8 +80,8 @@ pop_total = U %>% summarise(Total_personas=sum(cant_personas),
                  Desocupados=sum(desocupados),
                  Ocupados=sum(ocuopados),
                  Pobres=sum(pobre),
-                 N=n())%>%
-                 kable()%>%
+                 Total_hogares=n())%>%
+                 kable(.,caption="Tabla 2: Totales de principales variables")%>%
                 kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 pop_total
 
@@ -118,13 +133,14 @@ U %>%
             prom_ing=mean(ingreso_hog),
             sd_ig=sd(ingreso_hog),) %>%
             mutate(n_opt=round(n*N*sd_ig/sum(N*sd_ig),0))%>%
-            rename(.,N_h=N,
+            rename(.,Estrato=estrato,
+                   N_h=N,
                     Total_ingreso=tot_ing,
                    Promedio_ingreso=prom_ing,
                    SE_ingreso=sd_ig,
                    Tamaño_optimo=n_opt)%>%
             as.data.frame(.)%>%
-                 kable()%>%
+                 kable(.,caption="Tabla 3: Tamaño de la muestra por asignacion estratificada según ingreso")%>%
                 kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
 
@@ -284,7 +300,7 @@ estimadores =round(rbind(ingreso_promedio_gorro,hogares_pobres_gorro,total_perso
 rownames(estimadores) <- c("Ingreso promedio","Proporcion hogares pobres","Total de personas")
 
 estimadores%>%
-  kable()%>%
+  kable(.,caption="Tabla 4: Estimadores de ingreso promedio, hogares pobres y total de personas")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
@@ -371,7 +387,7 @@ te_boot
 
 
 ```
-##*Comparaciones*:
+## **Comparaciones:**
 
 Tanto en el punto 6 como el 7 se obtuvieron estimaciones del ingreso per-capita y de su error estándar. 
 La estimación del ingreso percapita fue la misma en los tres casos, la diferencia, aunque no mucha, surgió en la estimación del error estándar.
@@ -383,14 +399,14 @@ En todos los métodos las estimaciones se encuentran entre 37 y 38, siendo el m�
 **8. Realizar una visulización de la distribución empirica del estimador utilizando Bootstrap.**
 **Interprete los resultados obtenidos.**
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,fig.cap="Gráfico 1: 1000 réplicas realizadas bajo boostrap"}
 tibble(est= te_boot$replicates) %>% ggplot()+
                                     geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
                                     theme_minimal() +
                                     geom_vline(aes(xintercept=mean(te_boot$replicates)), color="blue", linetype="dashed", linewidth=1) +
                                     geom_vline(aes(xintercept=median(te_boot$replicates)), color="red", linetype="dotted", linewidth=1) +
                                     labs(title="Histograma de ingreso per cápita",
-                                         subtitle = "1000 réplicas realizadas bajo boostrap",
+                                         subtitle = "",
                                         x="Ratios",
                                         y="Frecuencia",
                                         caption="Asímetría: -0.04  Curtosis: 0.03") +
@@ -406,7 +422,7 @@ tibble(est= te_boot$replicates) %>% ggplot()+
 
 
 #Curtosis
-#kurtosis(te_boot$replicates)
+#kurtosis(te_boot$replicates)-3
 
 
 ```
@@ -433,7 +449,7 @@ dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>%
 row.names(dominios)=NULL
 
 dominios%>%
-  kable()%>%
+  kable(.,caption="Tabla 5: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' ")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
@@ -442,7 +458,7 @@ dominios%>%
 
 ```
 
-```{r,message=F,echo=F}
+```{r,message=F,echo=F,fig.cap="Gráfico 2: Estimación por dominios"}
 
   
 
@@ -498,10 +514,41 @@ dominios_2000%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
-
+te_boot2000=svyratio(~ingreso_hog, ~cant_personas,boot_2000,return.replicates=TRUE)
 
 
 ```
+
+
+```{r, echo=FALSE,fig.cap="Gráfico 3: 2000 réplicas realizadas bajo boostrap"}
+tibble(est= te_boot2000$replicates) %>% ggplot()+
+                                    geom_histogram(aes(x=est),bins=20,fill='orange',color='white') +
+                                    theme_minimal() +
+                                    geom_vline(aes(xintercept=mean(te_boot2000$replicates)), color="blue", linetype="dashed", linewidth=1) +
+                                    geom_vline(aes(xintercept=median(te_boot2000$replicates)), color="red", linetype="dotted", linewidth=1) +
+                                    labs(title="Histograma de ingreso per cápita",
+                                         subtitle = "",
+                                        x="Ratios",
+                                        y="Frecuencia",
+                                        caption="Asímetría: -0.09  Curtosis: 0.36") +
+                                    theme(plot.title = element_text(hjust = 0.5, size = 20),
+                                          axis.title.x = element_text(size = 15),                
+                                          axis.title.y = element_text(size = 15),                
+                                          axis.text.x = element_text(size = 12),                 
+                                          axis.text.y = element_text(size = 12))                  
+
+
+#asimetría
+#skewness(te_boot2000$replicates)
+
+
+#Curtosis
+#kurtosis(te_boot2000$replicates)-3
+
+
+```
+
+
 
 - Ajustar los ponderadores mediante post-estratificación:
 
