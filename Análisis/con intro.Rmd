@@ -449,9 +449,32 @@ La distribución nos permite realizar las siguientes interpretaciones:
 **Indique si los dominios de estimación son planeados o no planeados. Para este caso, utilice el Bootstrap realizado en los puntos anteriores.**
 **Comente los resultados obtenidos y proponga estrategias para mejorar la precisión de la estimación obtenida.**
 
-(Escribir algo sobre los dominios)
+Al momento de realizar estimaciones en base a diseños muestrales puede ser de interés profundizar en algunas subpoblaciones de la propia muestra.
+Estas subpoblaciones definidas por dominios pueden ser planeados o no planeados, en este caso donde ser o no ser pobre no es un aspecto considerado en el muestreo vamos a proceder a estimar el total de poblacion en estos dominios mediante la función `svyby` del paquete `Survey`.
+
+La cantidad de personas pobres y no pobres que nos interesa estimar es la siguiente:
+
+```{r}
+
+personas_pobres = data.frame(Pobre=c("No pobre","Pobre"),
+                             Freq=c(sum(U$cant_personas)-sum(U$cant_personas*U$pobre),
+                                    sum(U$cant_personas*U$pobre)))%>%
+  mutate( Prop=Freq/sum(U$cant_personas))
+
+
+personas_pobres%>%
+  kable(.,caption="Tabla 5: Total de personas para los dominios de 'Pobre' y 'No pobre' ")%>%
+  kable_styling(position = "center", latex_options = "HOLD_position")%>%
+  kable_classic_2()
+
+
+```
+
+Mientras que con el diseño de boostrap de 1000 réplicas los totales están dados de la siguiente manera:
+
 
 ```{r,message=F,echo=F}
+
 
 
 
@@ -465,7 +488,7 @@ dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>%
 row.names(dominios)=NULL
 
 dominios%>%
-  kable(.,caption="Tabla 5: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' con 1000 réplicas")%>%
+  kable(.,caption="Tabla 6: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' con 1000 réplicas")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
@@ -480,7 +503,6 @@ dominios%>%
 
 ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
   geom_bar(stat = "identity", position = position_dodge(), color = "black") +
-  geom_errorbar(aes(ymin = `2.5%`, ymax = `97.5%`), width = 0.2, position = position_dodge(0.9)) +
   labs(title = "Cantidad de Personas por Grupo (Pobre y No pobre)",
        x = "Grupo",
        y = "Cantidad de Personas") +
@@ -500,10 +522,12 @@ ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
 
 
 
-Los dominios no fueron planeados.
+
 Para mejorar las estimaciones se podría:
 
-- Aumentar la cantidad de iteraciones en el bootstrap
+- Aumentar la cantidad de iteraciones en el bootstrap.
+
+A priori la idea de un mayor tamaño de muestra nos sugiere que vamos a contar con mejores estimaciones, no obstante vemos que esto no es tan así dado que los totales son los mismos e incluso con mayor varianza, por lo que descartamos esta idea.
 
 
 ```{r,message=F,echo=F}
@@ -526,7 +550,7 @@ row.names(dominios_2000)=NULL
 
 
 dominios_2000%>%
-  kable(.,caption="Tabla 6: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' con 2000 replicas")%>%
+  kable(.,caption="Tabla 7: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' con 2000 replicas")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
@@ -574,10 +598,7 @@ En lo que respecta a esta estrategia no mejora las estimaciones.
 
 hogares_pobres = U  %>% group_by(.,pobre) %>% summarise(Freq = n()) #Frecuencias poblacionales de pobres
 
-#personas_pobres = data.frame(pobre=c("No pobre","Pobre"),
- #                            Freq=c(sum(U$cant_personas)-sum(U$cant_personas*U$pobre),
-  #                                  sum(U$cant_personas*U$pobre)))%>%
-  #mutate( Prop=Freq/sum(U$cant_personas))
+
 
 
 
@@ -598,14 +619,14 @@ post_estrati = as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_postestr, svyt
 row.names(post_estrati)=NULL
 
 post_estrati%>%
-  kable(.,caption="Tabla 7: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' mediante postestratificación")%>%
+  kable(.,caption="Tabla 8: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' mediante postestratificación")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
 ```
 
 
-```{r}
+```{r,echo=F,message=F}
 
 #Armado de gráficos para resumen
 
@@ -644,6 +665,35 @@ data = rbind(dominios, dominios_2000, post_estrati)
 
 
 ```
+
+
+```{r,echo=F,fig.cap="Gráfico 4: Comparación de cantidad de personas para cada estrategia"}
+
+
+ggplot(data, aes(x = Pobre, y = Cantidad_personas, fill = Estrategia)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(title = "Gráfico de barras agrupadas por categoría y estrategia",
+       x = "Categoría",
+       y = "Cantidad de Personas")+
+  scale_fill_manual(values = c("1000 réplicas" = "palegreen", "2000 réplicas" = "plum2", "Postestratificacion" = "lightskyblue1")) +
+  theme_minimal()
+```
+```{r,echo=F,fig.cap="Gráfico 5: Comparación desvio standard de Cantidad de Personas por Categoría y estrategia"}
+
+
+ggplot(data, aes(x = Pobre, y = SE, fill = Estrategia)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  labs(title = "Gráfico de barras agrupadas por categoría y estrategia",
+       x = "Categoría",
+       y = "Cantidad de Personas") +
+  scale_fill_manual(values = c("1000 réplicas" = "palegreen", "2000 réplicas" = "plum2", "Postestratificacion" = "lightskyblue1")) +
+  theme_minimal()
+
+
+```
+
+
+
 
 
 # Conclusiones
