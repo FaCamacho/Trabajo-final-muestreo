@@ -949,9 +949,10 @@ resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con
 el tamaño de muestra calculado en el punto anterior para obtener el
 tamaño de muestra de cada estrato según la asignación optima.</p>
-<p><span class="math display">\[n_h = n \\times \\frac{N_h
-\\text{sd}_{dU_h}[y]}{\\sum_{h=1}^{H} N_h
-\\text{sd}_{dU_h}[y]}\]</span></p>
+<p><span class="math display">\[
+n_h = n \times \frac{N_h \text{sd}_{dU_h}[y]}{\sum_{h=1}^{H} N_h
+\text{sd}_{dU_h}[y]}
+\]</span></p>
 <table class="table lightable-classic-2" style="color: black; margin-left: auto; margin-right: auto; color: black; font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
 Tabla 3: Tamaño de la muestra por asignacion estratificada según ingreso
@@ -1158,7 +1159,6 @@ población</strong></p>
 Error estandar (SE)</strong> <strong>- Coeficiente de variacion</strong>
 <strong>- Efecto de diseno</strong> <strong>- Margenes de error al
 95%.</strong></p>
-<p><strong>Interprete los resultados.</strong></p>
 <table class="table lightable-classic-2" style="color: black; margin-left: auto; margin-right: auto; color: black; font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto;">
 <caption>
 Tabla 4: Estimadores de ingreso promedio, hogares pobres y total de
@@ -1246,7 +1246,7 @@ Total de personas
 25888.597
 </td>
 <td style="text-align:right;">
-9677.927
+0.021
 </td>
 <td style="text-align:right;">
 1160294.609
@@ -1260,6 +1260,31 @@ Total de personas
 </tr>
 </tbody>
 </table>
+<p>Para cada una de las estimaciones se obtuvo su error estándar que
+muestra cuanto podría variar la estimación si se repitiera el muestreo
+muchas veces. En relación con las estimaciones, los errores no son muy
+altos, lo que permite interpretar que las estimaciones están cercas del
+verdadero valor a estimar.</p>
+<p>Observamos una mayor variación en cuanto a la variabilidad respecto a
+la media de la proporción de hogares pobres, siendo las estimaciónes más
+precisas la del ingreso promedio y el total de personas con un
+<strong>1.2%</strong> y <strong>2.1%</strong> respectivamente. Por otra
+parta la proporción de hogares pobres varía en un
+<strong>12.6%</strong></p>
+<p>Los intervalos de confianza obtenidos nos indican la precisión de
+nuestras estimaciones, en la tabla se puede ver que los intervalos son
+dentro de todo estrechos, por lo que las estimaciones realizadas son
+bastantes precisas.</p>
+<p>Por último, se obtiene el deff para cada estimación, estos dieron
+mayores a uno, indicando que el diseño aplicado es menos eficiente que
+el MAS, esto se podría deber a estar utilizando un diseño complejo en el
+que los ponderadores varían dependiendo de cada etapa de selección,
+también en un diseño por conglomerados, en el que estos son tanto
+heterogeneos entre si como homogeneos dentro, logrando información
+similar en cada conglomerado pero variable en el conjunto de datos, una
+forma de mejorar la eficiencia bajó estas hipótesis, es la de aumentar
+la cantidad de conglomerados, consiguiendo así suficiente
+información.</p>
 <p><strong>5. Para computar los errores estándar del punto anterior,
 ¿qué método para estimar varianza se utilizó?</strong></p>
 <p>Para estimar la varianza se utilizó el método del último conglomerado
@@ -1271,9 +1296,10 @@ lineal del estimador y permite estimar la varianza utilizando métodos
 para estimadores lineales.</p>
 <p><code>Survey</code>, el paquete que se utilizó en el punto anterior
 por defecto utiliza la formula:</p>
-<p><span class="math display">\[\hat
-V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat
-Y)**\]</span></p>
+<p><span class="math display">\[
+\hat{V}_{UC} = \frac{1}{n_I(n_I-1)}\sum\limits_{i\in s_I}\left(\hat{Y}_i
+- \hat{Y}\right)^2
+\]</span></p>
 <p><strong>6. Calcule el ingreso per cápita en Montevideo (junto con su
 error estándar).</strong> <strong>Indique el tipo de parámetro y qué
 método fue utilizado por defecto por el paquete survey para la
@@ -1287,11 +1313,15 @@ de Taylor” y se aproxima <span class="math inline">\(\\hat{\\theta}\)</span>, 
 por su desarrollo de primer orden. Como se utiliza una aproximación del
 parámetro, finalmente se obtiene la varianza del pseudo-estimador que es
 la que se conoce como la aproximación de la varianza.</p>
-<p><span class="math display">\[\\hat{V}(\\hat{\\theta}) = \\sum_{i \\in
-s} \\sum_{j \\in s} \\frac{\\Delta_{ij}}{\\pi_{ij}}
-\\frac{\\hat{u}_i}{\\pi_i} \\frac{\\hat{u}_j}{\\pi_j}\]</span></p>
-<p>Siendo $\hat{u}<em>i=</em>{q=1}^Q\hat{a}_q_qi #CAMBIAR FORMULAS POR
-LA DE V(R)??</p>
+<p><span class="math display">\[
+\hat{V}(\hat{\theta}) = \sum_{i \in s} \sum_{j \in s}
+\frac{\Delta_{ij}}{\pi_{ij}} \frac{\hat{u}_i}{\pi_i}
+\frac{\hat{u}_j}{\pi_j}
+\]</span></p>
+<p>Siendo</p>
+<p><span class="math display">\[
+\hat{u}_i = \sum\limits_{q=1}^Q \hat{a}_q y_{qi}
+\]</span></p>
 <p>Al realizarle la raíz cuadrada a la estimación de la varianza se
 obtiene finalmente el <span class="math inline">\({\sigma}\)</span>.</p>
 <table>
@@ -1701,7 +1731,7 @@ con respecto a los verdaderos valores de los parámetros. Esto nos lleva
 a poder afirmar, por lo menos en este caso, que el diseño propuesto,
 estratificado, por conglomerados y en dos etapas de selección, es un
 buen diseño.</p>
-<p>Por otr aparte para el caso de de estimar el total de los dominios
+<p>Por otra parte para el caso de de estimar el total de los dominios
 <em>Pobre</em> y <em>No pobre</em> es mejor ajustar los ponderadores por
 medio de postestratificación según la variable de interés.</p>
 <div class="figure">

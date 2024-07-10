@@ -126,7 +126,9 @@ n = round((((1.96^2 * 0.5 * (1-0.5)) / 0.03^2) * 1.5 ),0)
 Se comenzó calculando para cada estrato su tamaño y las medidas de resumen (total, promedio y desvío) de la variable auxiliar, ingreso_hog.
 Posteriormente, algunos de estos resultados fueron utilizados junto con el tamaño de muestra calculado en el punto anterior para obtener el tamaño de muestra de cada estrato según la asignación optima. 
 
-$$n_h = n \\times \\frac{N_h \\text{sd}_{dU_h}[y]}{\\sum_{h=1}^{H} N_h \\text{sd}_{dU_h}[y]}$$
+\[ 
+n_h = n \times \frac{N_h \text{sd}_{dU_h}[y]}{\sum_{h=1}^{H} N_h \text{sd}_{dU_h}[y]}
+\]
 
 ```{r}
 
@@ -284,9 +286,9 @@ hogares_pobres_gorro = cross_join( as.data.frame(svymean(~pobre,ps_pps,deff=T)),
 #Total de personas
 
 total_personas_gorro = cross_join( as.data.frame(svytotal(~cant_personas,ps_pps,deff=T)),
-                                     as.data.frame(confint(svytotal(~cant_personas,ps_pps,deff=T))))%>%
+                                   as.data.frame(confint(svytotal(~cant_personas,ps_pps,deff=T))))%>%
                           rename(.,Estimacion_puntual=total,SE=cant_personas,Deff=deff)%>%
-                              mutate(.,CV=SE/(as.data.frame(svymean(~cant_personas,ps_pps,deff=T))$mean) )
+  mutate(.,CV=SE/(Estimacion_puntual) )
 
 #Totales
 
@@ -302,9 +304,13 @@ estimadores%>%
 
 ```
  Para cada una de las estimaciones se obtuvo su error estándar que muestra cuanto podría variar la estimación si se repitiera el muestreo muchas veces. En relación con las estimaciones, los errores no son muy altos, lo que permite interpretar que las estimaciones están cercas del verdadero valor a estimar.
-Observando los coeficientes de variación se puede ver que son todos bajos excepto el de total de personas, que es un valor bastante alto e inusual, esto se podría deber a la presencia de datos atípicos muy grandes, a un error en la recolección de datos u otras opciones. De igual forma a este valor tan grande de CV lo interpretamos como que los datos son muy dispersos con respecto a la media.
+ 
+
+Observamos una mayor variación en cuanto a la variabilidad respecto a la media de la proporción de hogares pobres, siendo las estimaciónes más precisas la del ingreso promedio y el total de personas con un **1.2%** y **2.1%** respectivamente. Por otra parta la proporción de hogares pobres varía en un **12.6%**
+
 Los intervalos de confianza obtenidos nos indican la precisión de nuestras estimaciones, en la tabla se puede ver que los intervalos son dentro de todo estrechos, por lo que las estimaciones realizadas son bastantes precisas.
-Por último, se obtiene el deff para cada estimación, estos a diferencia de lo que se esperaba dieron mayores a uno, indicando que el diseño que aplicado es menos eficiente que el MAS, de igual forma, esto se podría deber a algún error en los calculos, debido a que al realizar las comparaciones con los verdaderos valores de los parámetros, estas fueron bastante buenas. Y como ya se conoce, el MAS no es de los mejores diseños.
+
+Por último, se obtiene el deff para cada estimación, estos dieron mayores a uno, indicando que el diseño aplicado es menos eficiente que el MAS, esto se podría deber a estar utilizando un diseño complejo en el que los ponderadores varían dependiendo de cada etapa de selección, también en un diseño por conglomerados, en el que estos son tanto heterogeneos entre si como homogeneos dentro, logrando información similar en cada conglomerado pero variable en el conjunto de datos, una forma de mejorar la eficiencia bajó estas hipótesis, es la de aumentar la cantidad de conglomerados, consiguiendo así suficiente información.
 
 **5. Para computar los errores estándar del punto anterior, ¿qué método para estimar varianza se utilizó?**
 
@@ -312,7 +318,9 @@ Para estimar la varianza se utilizó el método del último conglomerado junto c
 
 `Survey`, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: 
 
-$$\hat V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat Y)**$$
+\[ 
+\hat{V}_{UC} = \frac{1}{n_I(n_I-1)}\sum\limits_{i\in s_I}\left(\hat{Y}_i - \hat{Y}\right)^2
+\]
 
 
  **6. Calcule el ingreso per cápita en Montevideo (junto con su error estándar).**
@@ -323,9 +331,16 @@ En este punto se obtiene un estimador complejo denominado "Ratio", debido a que 
 
 Por defecto, el paquete `survey` utiliza la "Linealización de Taylor" y se aproxima $\\hat{\\theta}$, el parámetro de interés, por su desarrollo de primer orden. Como se utiliza una aproximación del parámetro, finalmente se obtiene la varianza del pseudo-estimador que es la que se conoce como la aproximación de la varianza.
 
-$$\\hat{V}(\\hat{\\theta}) = \\sum_{i \\in s} \\sum_{j \\in s} \\frac{\\Delta_{ij}}{\\pi_{ij}} \\frac{\\hat{u}_i}{\\pi_i} \\frac{\\hat{u}_j}{\\pi_j}$$
+\[
+\hat{V}(\hat{\theta}) = \sum_{i \in s} \sum_{j \in s} \frac{\Delta_{ij}}{\pi_{ij}} \frac{\hat{u}_i}{\pi_i} \frac{\hat{u}_j}{\pi_j}
+\]
 
-Siendo $\\hat{u}_i=\sum\limits_{q=1}^Q\\hat{a}_q\y_qi  #CAMBIAR FORMULAS POR LA DE V(R)??
+Siendo
+
+\[
+\hat{u}_i = \sum\limits_{q=1}^Q \hat{a}_q y_{qi}
+\]
+
 
 Al realizarle la raíz cuadrada a la estimación de la varianza se obtiene finalmente el ${\sigma}$.
 
