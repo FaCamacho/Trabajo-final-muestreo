@@ -69,15 +69,14 @@ summary(U) %>%
   kable_styling(position = "center", latex_options = "HOLD_position") %>%  kable_classic_2()
 
 ```
+
+### Totales
+
 Se cuenta con la información de 452.721 hogares donde cada uno pertenece a una de las 3480 manzanas. 
 Para cada hogar se tiene la información de la cantidad de personas que habitan en él y si estas personas están ocupadas, desocupadas o ninguna de las anteriores, que se entiende como personas que no trabajan ni buscan hacerlo. 
 Observando la tabla se puede notar que la media de los ocupados, 1,323, es mucho mayor que la de los desocupados, 0.1265.
 Además se tiene la información de si los hogares alquilan o no y cuánto pagan por ello.
 La media del precio del alquiler se encuentra en $33.713, mientras que el ingreso promedio del hogar está en $4653, una diferencia muy notable.
-
-### Totales
-
-Describir algo
 
 
 ```{r}
@@ -258,13 +257,6 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
 **Interprete los resultados.**
  
 
-Las estimaciones se realizaron tomando en cuenta la muestra final de hogares y los diseños con los que se trabajó.
-
-$$ \hat Y_{HT}=\sum\limits_{i\in s} \frac{y_i}{\pi_i} $$ donde $$pi=n\frac{x_i}{\sum\limits_{i\in U}x_i}$$
-
-#seguir
-
-
 ```{r,echo=F}
 
 #Diseño estratificado en dos etapas 
@@ -438,11 +430,10 @@ Podría decirse que se asemeja a la distribución de la normal, debido a que se 
 
 La distribución nos permite realizar las siguientes interpretaciones:	
 
--Muy pocos hogares tienen un ingreso per cápita menor o igual a 1650 o mayor a 1800. Esto se puede ver representado en las colas de la distribución.
+-En muy pocas estimaciones se obtuvo un ingreso per cápita menor o igual a 1650 o mayor a 1800. 
 
--El ingreso per cápita se acumula entre los 1700 y 1750, tal como se ve en el centro del gráfico.
+-Las estimaciones se acumulan entre los 1700 y 1750.
 
--La distribución va “pegando saltos” bastante notables para varios niveles del ingreso per cápita. Estos saltos se podrían interpretar como los cambios en el parámetro según el nivel socioeconómico de los hogares, mostrando que la diferencia entre un nivel y otro es muy marcada.
 
 
 **9. Estime la cantidad de personas pobres y no pobres (junto con sus márgenes de error).**
@@ -691,6 +682,19 @@ ggplot(data, aes(x = Pobre, y = SE, fill = Estrategia)) +
 
 
 ```
+#Comparaciones:
+
+Como se mencionó anteriormente, uno de los objetivos de este proyecto era realizar estimaciones de diferentes parámetros para posteriormente compararlos con sus verdaderos valores.
+
+Algunas de las comparaciones:
+
+-El total de personas se estimó en 1.211.035 y el verdadero valor es 1.223.410
+
+-El ingreso promedio de los hogares se estimó en 4619 y el verdadero valor es 4653.
+
+-La proporción de hogares pobres se estimó en 0.085 y su verdadero valor es 0.07955.
+
+-El ingreso per cápita se estimó en 1727 y su verdadero valor es de 1722.
 
 
 
@@ -698,7 +702,7 @@ ggplot(data, aes(x = Pobre, y = SE, fill = Estrategia)) +
 
 # Conclusiones
 
-- Comparacion entre los estimadores y los parametros
+Las estimaciones realizadas fueron buenas ya que no difieren mucho con respecto a los verdaderos valores de los parámetros. Esto nos lleva a poder afirmar, por lo menos en este caso, que el diseño propuesto, estratificado, por conglomerados y en dos etapas de selección, es un buen diseño.
 
 
 
