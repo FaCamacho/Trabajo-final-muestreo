@@ -548,6 +548,7 @@ tibble(est= te_boot2000$replicates) %>% ggplot()+
 
 ```
 
+En lo que respecta a esta estrategia no mejora las estimaciones.
 
 
 - Ajustar los ponderadores mediante post-estratificación:
