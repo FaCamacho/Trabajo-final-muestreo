@@ -4,7 +4,7 @@ author: "Fabricio Camacho y Luciana Viscailuz"
 output: 
   html_document:
     fig_caption: true
-date: "2024-06-18"
+date: "2024-07-10"
 ---
 
 ```{r setup, include=FALSE}
@@ -76,7 +76,7 @@ Se cuenta con la información de 452.721 hogares donde cada uno pertenece a una 
 Para cada hogar se tiene la información de la cantidad de personas que habitan en él y si estas personas están ocupadas, desocupadas o ninguna de las anteriores, que se entiende como personas que no trabajan ni buscan hacerlo. 
 Observando la tabla se puede notar que la media de los ocupados, 1,323, es mucho mayor que la de los desocupados, 0.1265.
 Además se tiene la información de si los hogares alquilan o no y cuánto pagan por ello.
-La media del precio del alquiler se encuentra en $33.713, mientras que el ingreso promedio del hogar está en $4653, una diferencia muy notable.
+La media del precio del alquiler se encuentra en 33.713, mientras que el ingreso promedio del hogar está en 4653, una diferencia muy notable.
 
 
 ```{r}
@@ -101,7 +101,7 @@ pop_total
 
 Para obtener el tamaño de muestra para cualquier proporción se utilizó la formula:
 
-  $$n = ((z^2 * p*(1-p))/moe^2)*moe  $$ 
+  $$n = ((z^2 * p*(1-p))/moe^2)*moe$$ 
 
 Como se pedía un 95% de confianza, $\alpha$ tomó el valor de 0.05. Llevando a que $z_{(1-\sigma)}$  fuera el valor de la distribución normal en el cuantil 0.975.
 Posteriormente se asumió que p tomaba el valor de 0.5 y se sustituyó moe (margen de error) por 0.03, tal como pide la letra.
@@ -309,7 +309,7 @@ estimadores%>%
 
 Para estimar la varianza se utilizó el método del último conglomerado junto con la linealización de Taylor. En este método se asume que la mayor variabilidad en la estimación proviene de la primera etapa del muestreo y que las manzanas (UPM) son seleccionadas con reposición. Luego el método de la linealización de Taylor realiza una aproximación lineal del estimador y permite estimar la varianza utilizando métodos para estimadores lineales.
 
-Survey, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: 
+`Survey`, el paquete que se utilizó en el punto anterior por defecto utiliza la formula: 
 
 $$\hat V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat Y)**$$
 
@@ -320,13 +320,13 @@ $$\hat V_{UC}=\frac{1}{n_I\n_I-1}\sum\limits_{i\in s_I}\(hat Y_i*-hat Y)**$$
 
 En este punto se obtiene un estimador complejo denominado "Ratio", debido a que surge como cociente de dos totales, ingresos totales en Montevideo y cantidad de habitantes. Para realizar su estimación se debió contar previamente con la estimación de dichos totales.
 
-Por defecto, el paquete survey utiliza la "Linealización de Taylor" y se aproxima $\\hat{\\theta}$, el parámetro de interés, por su desarrollo de primer orden. Como se utiliza una aproximación del parámetro, finalmente se obtiene la varianza del pseudo-estimador que es la que se conoce como la aproximación de la varianza.
+Por defecto, el paquete `survey` utiliza la "Linealización de Taylor" y se aproxima $\\hat{\\theta}$, el parámetro de interés, por su desarrollo de primer orden. Como se utiliza una aproximación del parámetro, finalmente se obtiene la varianza del pseudo-estimador que es la que se conoce como la aproximación de la varianza.
 
 $$\\hat{V}(\\hat{\\theta}) = \\sum_{i \\in s} \\sum_{j \\in s} \\frac{\\Delta_{ij}}{\\pi_{ij}} \\frac{\\hat{u}_i}{\\pi_i} \\frac{\\hat{u}_j}{\\pi_j}$$
 
 Siendo $\\hat{u}_i=\sum\limits_{q=1}^Q\\hat{a}_q\y_qi  #CAMBIAR FORMULAS POR LA DE V(R)??
 
-Al realizarle la raíz cuadrada a la estimación de la varianza se obtiene finalmente el $SE$.
+Al realizarle la raíz cuadrada a la estimación de la varianza se obtiene finalmente el ${\sigma}$.
 
 
 ```{r, echo=F,message=F}
@@ -343,14 +343,19 @@ Ingreso_percapita=bind_cols(as.data.frame(ratio_est$ratio),as.data.frame(sqrt(ra
 
 row.names(Ingreso_percapita)=NULL
 
-Ingreso_percapita
+
 
 ```
+
+| Ingreso Percapita | ${\sigma}$ |
+|:-------:|:------:|
+| 1726.827| 37.787|
+
 **7. Calcule la estimación del error estándar del punto anterior, utilizando dos métodos de remuestreo: Jackknife y Bootstrap (con 1000 réplicas).**
 
 
 
-Jackknife y Bootstrap son dos métodos de remuestreo que tienen como uno de sus objetivos obtener el $SE$ de estimadores no lineales.
+Jackknife y Bootstrap son dos métodos de remuestreo que tienen como uno de sus objetivos obtener el ${\sigma}$ de estimadores no lineales.
 La idea general de estos es que obtienen replicas de forma independiente a partir de la muestra original y posteriormente, para cada una de estas se calcula la estimación del parámetro. La varianza del estimador se obtiene a partir de observar la varianza entre las muestras.
 
 Se comenzó realizando la estimación del error estándar bajo el método de Jackknife. Como el diseño es estratificado, se apliza Jackknife dentro de cada estrato. En este metodo se obtienen las réplicas eliminando de una unidad a la vez, en este caso, como el diseño es por conglomerados, eliminar una unidad se trauce en eliminar una UPM.  
@@ -364,9 +369,14 @@ jkn=as.svrepdesign(design=ps_pps,type='JKn', replicate=1000)
 
 te_jkn=svyratio(~ingreso_hog, ~cant_personas,jkn,return.replicates=TRUE)
 
-te_jkn
+
 
 ```
+
+| Ingreso Percapita (Jackknife) | ${\sigma}$ |
+|:-------:|:------:|
+| 1726.827| 37.884|
+
 Luego, se estimó nuevamente el error estándar pero bajo el método de Bootstrap, con la variación de Rao-Wu, que se utiliza en diseños
 aleatorios, estratificados y en varia etapas de selección, como es el caso. En este método se obtienen replicas de cada estrato bajo un MAS y luego de varios calculos se obtienen diferentes estimaciones del parámetro de intrés, estas estimaciones se utilizan para calcular la varianza del estimador.
 
@@ -380,16 +390,18 @@ boot=as.svrepdesign(design=ps_pps, type='subbootstrap', replicates=1000)
 
 te_boot=svyratio(~ingreso_hog, ~cant_personas,boot,return.replicates=TRUE)
 
-te_boot 
-
 
 
 ```
-## **Comparaciones:**
+ | Ingreso Percapita (Bootstrap) | ${\sigma}$ |
+|:-------:|:------:|
+| 1726.827| 37.541|
+ 
+ **Comparaciones:**
 
 Tanto en el punto 6 como el 7 se obtuvieron estimaciones del ingreso per-capita y de su error estándar. 
 La estimación del ingreso percapita fue la misma en los tres casos, la diferencia, aunque no mucha, surgió en la estimación del error estándar.
-En todos los métodos las estimaciones se encuentran entre 37 y 38, siendo el método de Bootstrap el que obtuvo un menor %SE% con un valor de 37.54098, y Jackknife el mayor con 37.88454. En conlusión, si existe una diferencia entre las estimaciones de los métodos pero por lo menos en este caso dichas diferencias no son muy importantes.
+En todos los métodos las estimaciones se encuentran entre 37 y 38, siendo el método de Bootstrap el que obtuvo un menor %SE% con un valor de **37.541**, y Jackknife el mayor con **37.884**. En conlusión, si existe una diferencia entre las estimaciones de los métodos pero por lo menos en este caso dichas diferencias no son muy importantes.
 
 
 
@@ -430,9 +442,9 @@ Podría decirse que se asemeja a la distribución de la normal, debido a que se 
 
 La distribución nos permite realizar las siguientes interpretaciones:	
 
--En muy pocas estimaciones se obtuvo un ingreso per cápita menor o igual a 1650 o mayor a 1800. 
+- En muy pocas estimaciones se obtuvo un ingreso per cápita menor o igual a 1650 o mayor a 1800. 
 
--Las estimaciones se acumulan entre los 1700 y 1750.
+- Las estimaciones se acumulan entre los 1700 y 1750.
 
 
 
@@ -520,6 +532,8 @@ Para mejorar las estimaciones se podría:
 
 A priori la idea de un mayor tamaño de muestra nos sugiere que vamos a contar con mejores estimaciones, no obstante vemos que esto no es tan así dado que los totales son los mismos e incluso con mayor varianza, por lo que descartamos esta idea.
 
+Vemos que incluso la distribución del estimador ya no mantiene las mismas características de normalidad que el que realizamos con 1000 réplicas.
+
 
 ```{r,message=F,echo=F}
 
@@ -584,6 +598,13 @@ En lo que respecta a esta estrategia no mejora las estimaciones.
 
 - Ajustar los ponderadores mediante post-estratificación:
 
+
+
+Como siguiente estrategia nos valimos de la postestratificación por hogares pobres.
+En nuestro caso contamos con la información de cual es la cantidad de hogares pobres, entonces con ese dato reponderamos con la función `postStratify` según estos para conseguir las siguientes estimaciones.
+
+Vemos en este caso como las estimaciones permiten estimar de mejor forma la pobreza y en ambos casos con menor error que sin haber reponderado.
+
 ```{r, echo=T, message=F}
 
 
@@ -621,6 +642,14 @@ post_estrati%>%
 
 #Armado de gráficos para resumen
 
+parametros =data.frame(
+  Pobre = c("No pobre", "Pobre"),
+  Cantidad_personas = c(1077511, 145899),
+  SE = c(0, 0),
+  low = c(0, 0),
+  up = c(0, 0)
+)
+
 # Crear los dataframes
 dominios = data.frame(
   Pobre = c("No pobre", "Pobre"),
@@ -647,62 +676,71 @@ post_estrati = data.frame(
 )
 
 # Añadir una columna para identificar los conjuntos de datos
-dominios$Estrategia = "1000 réplicas"
-dominios_2000$Estrategia = "2000 réplicas"
+dominios$Estrategia = "Réplicas1000"
+dominios_2000$Estrategia = "Réplicas2000"
 post_estrati$Estrategia = "Postestratificacion"
+parametros$Estrategia = "Parametros"
 
 # Combinar los dataframes
 data = rbind(dominios, dominios_2000, post_estrati)
 
+data2 = rbind(parametros,dominios, dominios_2000, post_estrati)
 
 ```
 
 
-```{r,echo=F,fig.cap="Gráfico 4: Comparación de cantidad de personas para cada estrategia"}
 
-
-ggplot(data, aes(x = Pobre, y = Cantidad_personas, fill = Estrategia)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
-  labs(title = "Gráfico de barras agrupadas por categoría y estrategia",
-       x = "Categoría",
-       y = "Cantidad de Personas")+
-  scale_fill_manual(values = c("1000 réplicas" = "palegreen", "2000 réplicas" = "plum2", "Postestratificacion" = "lightskyblue1")) +
-  theme_minimal()
-```
-```{r,echo=F,fig.cap="Gráfico 5: Comparación desvio standard de Cantidad de Personas por Categoría y estrategia"}
-
-
-ggplot(data, aes(x = Pobre, y = SE, fill = Estrategia)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
-  labs(title = "Gráfico de barras agrupadas por categoría y estrategia",
-       x = "Categoría",
-       y = "Cantidad de Personas") +
-  scale_fill_manual(values = c("1000 réplicas" = "palegreen", "2000 réplicas" = "plum2", "Postestratificacion" = "lightskyblue1")) +
-  theme_minimal()
-
-
-```
-#Comparaciones:
+# Conclusiones:
 
 Como se mencionó anteriormente, uno de los objetivos de este proyecto era realizar estimaciones de diferentes parámetros para posteriormente compararlos con sus verdaderos valores.
 
 Algunas de las comparaciones:
 
--El total de personas se estimó en 1.211.035 y el verdadero valor es 1.223.410
+- El total de personas se estimó en **1.211.035** y el verdadero valor es **1.223.410**
 
--El ingreso promedio de los hogares se estimó en 4619 y el verdadero valor es 4653.
+- El ingreso promedio de los hogares se estimó en **4619** y el verdadero valor es **4653**.
 
--La proporción de hogares pobres se estimó en 0.085 y su verdadero valor es 0.07955.
+- La proporción de hogares pobres se estimó en **0.085** y su verdadero valor es **0.07955**.
 
--El ingreso per cápita se estimó en 1727 y su verdadero valor es de 1722.
+- El ingreso per cápita se estimó en **1727** y su verdadero valor es de **1722**.
 
+- El total de personas pobres se estimó en **148813** y su verdadero valor es de **145899**.
 
-
-
-
-# Conclusiones
 
 Las estimaciones realizadas fueron buenas ya que no difieren mucho con respecto a los verdaderos valores de los parámetros. Esto nos lleva a poder afirmar, por lo menos en este caso, que el diseño propuesto, estratificado, por conglomerados y en dos etapas de selección, es un buen diseño.
 
+Por otr aparte para el caso de de estimar el total de los dominios *Pobre* y *No pobre* es mejor ajustar los ponderadores por medio de postestratificación según la variable de interés.
 
+
+```{r,echo=F,fig.cap="Gráfico 4: Comparación de cantidad de personas para cada estrategia"}
+
+
+ggplot(data2, aes(x = Pobre, y = Cantidad_personas, fill = Estrategia)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 1)) +
+  labs(title = "Gráfico de barras agrupadas por categoría y estrategia",
+       x = "Categoría",
+       y = "Cantidad de Personas")+
+ scale_fill_manual(values = c("Réplicas1000" = "palegreen",
+                              "Réplicas2000" = "palegreen4",
+                              "Postestratificacion" = "tan1",
+                              "Parametros"="tomato1")) +
+  theme_minimal()
+```
+
+
+```{r,echo=F,fig.cap="Gráfico 5: Comparación desvio standard de Cantidad de Personas por Categoría y estrategia"}
+
+
+ggplot(data, aes(x = Pobre, y = SE, fill = Estrategia)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 1)) +
+  labs(title = "Gráfico de barras agrupadas por categoría y estrategia",
+       x = "Categoría",
+       y = "Cantidad de Personas") +
+  scale_fill_manual(values = c("Réplicas1000" = "palegreen",
+                              "Réplicas2000" = "palegreen4",
+                              "Postestratificacion" = "tan1")) +
+  theme_minimal()
+
+
+```
 
