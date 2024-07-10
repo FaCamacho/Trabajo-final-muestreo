@@ -449,7 +449,7 @@ dominios = as.data.frame(svyby(~cant_personas , ~pobre , boot , svytotal)) %>%
 row.names(dominios)=NULL
 
 dominios%>%
-  kable(.,caption="Tabla 5: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' ")%>%
+  kable(.,caption="Tabla 5: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' con 1000 réplicas")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
@@ -510,7 +510,7 @@ row.names(dominios_2000)=NULL
 
 
 dominios_2000%>%
-  kable()%>%
+  kable(.,caption="Tabla 6: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' con 2000 replicas")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
@@ -576,7 +576,7 @@ post_estrati = as.data.frame(svyby(~cant_personas, ~pobre, ps_pps_postestr, svyt
 row.names(post_estrati)=NULL
 
 post_estrati%>%
-  kable()%>%
+  kable(.,caption="Tabla 7: Estimación del total de personas para los dominios de 'Pobre' y 'No pobre' mediante postestratificación")%>%
   kable_styling(position = "center", latex_options = "HOLD_position")%>%
   kable_classic_2()
 
