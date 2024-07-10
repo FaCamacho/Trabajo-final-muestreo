@@ -253,9 +253,7 @@ S = tibble::as_tibble(rbind(Muestra[[1]],Muestra[[2]],Muestra[[3]],Muestra[[4]],
  **- Coeficiente de variacion**
  **- Efecto de diseno**
  **- Margenes de error al 95%.**
- 
-**Interprete los resultados.**
- 
+  
 
 ```{r,echo=F}
 
@@ -303,7 +301,10 @@ estimadores%>%
   kable_classic_2()
 
 ```
- 
+ Para cada una de las estimaciones se obtuvo su error estándar que muestra cuanto podría variar la estimación si se repitiera el muestreo muchas veces. En relación con las estimaciones, los errores no son muy altos, lo que permite interpretar que las estimaciones están cercas del verdadero valor a estimar.
+Observando los coeficientes de variación se puede ver que son todos bajos excepto el de total de personas, que es un valor bastante alto e inusual, esto se podría deber a la presencia de datos atípicos muy grandes, a un error en la recolección de datos u otras opciones. De igual forma a este valor tan grande de CV lo interpretamos como que los datos son muy dispersos con respecto a la media.
+Los intervalos de confianza obtenidos nos indican la precisión de nuestras estimaciones, en la tabla se puede ver que los intervalos son dentro de todo estrechos, por lo que las estimaciones realizadas son bastantes precisas.
+Por último, se obtiene el deff para cada estimación, estos a diferencia de lo que se esperaba dieron mayores a uno, indicando que el diseño que aplicado es menos eficiente que el MAS, de igual forma, esto se podría deber a algún error en los calculos, debido a que al realizar las comparaciones con los verdaderos valores de los parámetros, estas fueron bastante buenas. Y como ya se conoce, el MAS no es de los mejores diseños.
 
 **5. Para computar los errores estándar del punto anterior, ¿qué método para estimar varianza se utilizó?**
 
