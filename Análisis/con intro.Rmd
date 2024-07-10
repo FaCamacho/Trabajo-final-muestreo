@@ -544,7 +544,7 @@ ggplot(dominios, aes(x = Pobre, y = Cantidad_personas, fill = Pobre)) +
 
 Para mejorar las estimaciones se podría:
 
-- Aumentar la cantidad de iteraciones en el bootstrap.
+- *Aumentar la cantidad de iteraciones en el bootstrap.*
 
 A priori la idea de un mayor tamaño de muestra nos sugiere que vamos a contar con mejores estimaciones, no obstante vemos que esto no es tan así dado que los totales son los mismos e incluso con mayor varianza, por lo que descartamos esta idea.
 
@@ -582,7 +582,7 @@ dominios_2000%>%
 
 
 
-- Ajustar los ponderadores mediante post-estratificación:
+- *Ajustar los ponderadores mediante post-estratificación:*
 
 
 
@@ -622,6 +622,22 @@ post_estrati%>%
   kable_classic_2()
 
 ```
+
+
+- *Estimador de Hayek*
+
+$$
+Y_{\text{HAYEK},d} = N_d \tilde{y}_{sd}
+$$
+
+donde:
+
+- \(N_d\) es el tamaño total del dominio \(d\).
+
+- \(\tilde{y}_{sd}\) es la media muestral de la variable de interés en el dominio \(d\).
+
+Esta sería la alternativa más viable en el marco de un muestreo complejo por conglomerados, implica conocer el tamaño de los dominios dentro de cada conglomerado pero agrega más información a la construcción del estimador.
+Al tener más información lo vuelve más confiable que el estimador *HT*, incluso en situaciones donde la representación de los dominios es chica.
 
 
 ```{r,echo=F,message=F}

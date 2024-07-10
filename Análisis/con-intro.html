@@ -1559,7 +1559,7 @@ Gráfico 2: Estimación por dominios
 </div>
 <p>Para mejorar las estimaciones se podría:</p>
 <ul>
-<li>Aumentar la cantidad de iteraciones en el bootstrap.</li>
+<li><em>Aumentar la cantidad de iteraciones en el bootstrap.</em></li>
 </ul>
 <p>A priori la idea de un mayor tamaño de muestra nos sugiere que vamos
 a contar con mejores estimaciones, no obstante vemos que esto no es tan
@@ -1627,7 +1627,8 @@ Pobre
 </tbody>
 </table>
 <ul>
-<li>Ajustar los ponderadores mediante post-estratificación:</li>
+<li><em>Ajustar los ponderadores mediante
+post-estratificación:</em></li>
 </ul>
 <p>Como siguiente estrategia nos valimos de la postestratificación por
 hogares pobres. En nuestro caso contamos con la información de cual es
@@ -1705,6 +1706,25 @@ Pobre
 </tr>
 </tbody>
 </table>
+<ul>
+<li><em>Estimador de Hayek</em></li>
+</ul>
+<p><span class="math display">\[
+Y_{\text{HAYEK},d} = N_d \tilde{y}_{sd}
+\]</span></p>
+<p>donde:</p>
+<ul>
+<li><p><span class="math inline">\(N_d\)</span> es el tamaño total del
+dominio <span class="math inline">\(d\)</span>.</p></li>
+<li><p><span class="math inline">\(\tilde{y}_{sd}\)</span> es la media
+muestral de la variable de interés en el dominio <span class="math inline">\(d\)</span>.</p></li>
+</ul>
+<p>Esta sería la alternativa más viable en el marco de un muestreo
+complejo por conglomerados, implica conocer el tamaño de los dominios
+dentro de cada conglomerado pero agrega más información a la
+construcción del estimador. Al tener más información lo vuelve más
+confiable que el estimador <em>HT</em>, incluso en situaciones donde la
+representación de los dominios es chica.</p>
 </div>
 <div id="conclusiones" class="section level1">
 <h1>Conclusiones:</h1>
